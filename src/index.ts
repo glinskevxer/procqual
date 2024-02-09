@@ -1,3 +1,4 @@
+export * from './core/clock.js';
 export * from './core/decimal.js';
 export * from './core/errors.js';
 export * from './core/interval.js';
