@@ -5,4 +5,5 @@ export * from './core/identifier.js';
 export * from './core/interval.js';
 export * from './core/plainDate.js';
 export * from './core/result.js';
+export * from './core/schema.js';
 export * from './core/units.js';
