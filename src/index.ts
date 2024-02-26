@@ -9,3 +9,4 @@ export * from './core/schema.js';
 export * from './core/text.js';
 export * from './core/units.js';
 export * from './codes/process.js';
+export * from './codes/position.js';
