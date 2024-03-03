@@ -12,3 +12,4 @@ export * from './codes/process.js';
 export * from './codes/position.js';
 export * from './codes/pnumber.js';
 export * from './codes/fnumber.js';
+export * from './codes/anumber.js';
