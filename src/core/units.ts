@@ -17,7 +17,7 @@ export class Length {
   private readonly inches: Decimal;
 
   private constructor(inches: Decimal) {
-    this.inches = inches;
+    this.inches = inches.normalized();
   }
 
   static ofInches(value: Decimal | string | number): Length {
@@ -191,9 +191,5 @@ function toDecimal(value: Decimal | string | number): Decimal {
 }
 
 function trimZeros(value: Decimal): string {
-  const text = value.toString();
-  if (!text.includes('.')) {
-    return text;
-  }
-  return text.replace(/0+$/, '').replace(/\.$/, '');
+  return value.normalized().toString();
 }

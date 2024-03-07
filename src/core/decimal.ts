@@ -154,6 +154,17 @@ export class Decimal {
     return this.compare(other) >= 0;
   }
 
+  /** The same value with any trailing zeros dropped from its scale. */
+  normalized(): Decimal {
+    let units = this.units;
+    let scale = this.scale;
+    while (scale > 0 && units % 10n === 0n) {
+      units /= 10n;
+      scale -= 1;
+    }
+    return new Decimal(units, scale);
+  }
+
   round(scale: number, mode: RoundingMode = 'half-up'): Decimal {
     if (scale >= this.scale) {
       return new Decimal(this.atScale(scale), scale);

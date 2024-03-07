@@ -14,3 +14,4 @@ export * from './codes/pnumber.js';
 export * from './codes/fnumber.js';
 export * from './codes/anumber.js';
 export * from './codes/classification.js';
+export * from './codes/thicknessRange.js';

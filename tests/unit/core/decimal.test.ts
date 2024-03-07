@@ -160,6 +160,19 @@ describe('rounding', () => {
   });
 });
 
+describe('normalizing', () => {
+  it('drops trailing zeros without changing the value', () => {
+    expect(decimal('0.2750000').normalized().toString()).toBe('0.275');
+    expect(decimal('1.000').normalized().toString()).toBe('1');
+    expect(decimal('100').normalized().toString()).toBe('100');
+    expect(decimal('0.000').normalized().isZero()).toBe(true);
+  });
+
+  it('leaves a value that has none alone', () => {
+    expect(decimal('0.375').normalized().getScale()).toBe(3);
+  });
+});
+
 describe('conversion', () => {
   it('round trips through json', () => {
     expect(JSON.parse(JSON.stringify({ t: decimal('0.375') }))).toEqual({ t: '0.375' });
