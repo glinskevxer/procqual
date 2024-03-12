@@ -16,3 +16,4 @@ export * from './codes/anumber.js';
 export * from './codes/classification.js';
 export * from './codes/thicknessRange.js';
 export * from './codes/performanceRange.js';
+export * from './codes/essentialVariable.js';
