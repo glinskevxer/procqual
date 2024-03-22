@@ -19,3 +19,4 @@ export * from './codes/performanceRange.js';
 export * from './codes/essentialVariable.js';
 export * from './core/temperature.js';
 export * from './codes/heatTreatment.js';
+export * from './codes/toughness.js';
