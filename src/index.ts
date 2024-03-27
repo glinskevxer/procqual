@@ -22,3 +22,4 @@ export * from './codes/heatTreatment.js';
 export * from './codes/toughness.js';
 export * from './qualification/tensile.js';
 export * from './qualification/bend.js';
+export * from './qualification/impact.js';
