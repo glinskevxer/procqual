@@ -25,3 +25,4 @@ export * from './qualification/bend.js';
 export * from './qualification/impact.js';
 export * from './qualification/hardness.js';
 export * from './qualification/testPlan.js';
+export * from './materials/baseMetal.js';
