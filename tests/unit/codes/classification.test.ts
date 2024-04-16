@@ -98,6 +98,32 @@ describe('stainless', () => {
   });
 });
 
+describe('duplex and nickel', () => {
+  it('reads a four digit duplex grade', () => {
+    const facts = parseClassification('SFA-5.9 ER2209');
+    expect(facts.fNumber).toBe(6);
+    expect(facts.aNumber).toBe(8);
+  });
+
+  it('reads a bare nickel chromium wire into its own group', () => {
+    const facts = parseClassification('SFA-5.14 ERNiCrMo-3');
+    expect(facts.fNumber).toBe(45);
+    expect(facts.designator).toBe('ER');
+  });
+
+  it('reads a plain nickel wire into a different group again', () => {
+    expect(parseClassification('SFA-5.14 ERNi-1').fNumber).toBe(41);
+  });
+
+  it('reads a covered nickel electrode into the covered group', () => {
+    expect(parseClassification('SFA-5.11 ENiCrFe-3').fNumber).toBe(43);
+  });
+
+  it('leaves the deposit group empty, since the A numbers are iron based', () => {
+    expect(parseClassification('SFA-5.14 ERNiCrMo-3').aNumber).toBeUndefined();
+  });
+});
+
 describe('rejections', () => {
   it('needs both halves of the name', () => {
     expect(() => parseClassification('E7018')).toThrow(ValidationError);

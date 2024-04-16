@@ -82,7 +82,8 @@ const HIGH_ALLOY_GRADES = new Set(['310', '310S', '330', '320', '320LR']);
 const COVERED = /^E(\d{2,3})(\d)(\d)(?:-(.+))?$/;
 const CORED = /^E(\d)(\d)T([\dG]{1,2})?(?:-(.+))?$/;
 const WIRE = /^(ER|EC|ERC|EM|EB|RG)(\d{2,3})([A-Z]*)(?:-(.+))?$/;
-const STAINLESS = /^(E|ER|EC)(\d{3}[A-Z]*)(?:-(\d{2}))?$/;
+const STAINLESS = /^(E|ER|EC)(\d{3,4}[A-Z]*)(?:-(\d{2}))?$/;
+const NICKEL = /^(ER|E)NI([A-Z]*)(?:-(\d+))?$/;
 
 export function parseClassification(text: string): FillerClassification {
   const trimmed = text.trim().toUpperCase();
@@ -108,6 +109,10 @@ function readSpecification(text: string): string {
 }
 
 function readClassification(specification: string, classification: string): FillerClassification {
+  const nickel = NICKEL.exec(classification);
+  if (nickel !== null) {
+    return nickelFacts(specification, classification, nickel);
+  }
   const stainless = STAINLESS.exec(classification);
   if (stainless !== null && isStainlessGrade(stainless[2] ?? '')) {
     return stainlessFacts(specification, classification, stainless);
@@ -212,9 +217,35 @@ function stainlessFacts(
   };
 }
 
+function nickelFacts(
+  specification: string,
+  classification: string,
+  match: RegExpExecArray,
+): FillerClassification {
+  const bare = match[1] === 'ER';
+  const alloy = match[2] ?? '';
+  return {
+    specification,
+    classification,
+    designator: bare ? 'ER' : 'E',
+    minimumTensileKsi: undefined,
+    usabilityCode: undefined,
+    suffix: match[3],
+    fNumber: bare ? (alloy.includes('CR') ? 45 : 41) : 43,
+    // The A number groups describe iron based deposits, so a nickel alloy
+    // deposit does not belong to one and the record has to say so.
+    aNumber: undefined,
+    lowHydrogen: true,
+    allPosition: true,
+  };
+}
+
 function isStainlessGrade(grade: string): boolean {
   const digits = Number(grade.replace(/[A-Z]+$/, ''));
-  return digits >= 200 && digits <= 399;
+  if (digits >= 200 && digits <= 399) {
+    return true;
+  }
+  return digits >= 2000 && digits <= 2999;
 }
 
 export function describeClassification(facts: FillerClassification): string {
