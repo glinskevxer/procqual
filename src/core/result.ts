@@ -88,7 +88,9 @@ export function all<T, E>(results: readonly Result<T, E>[]): Result<T[], E> {
  * reporting the first bad field of a form and hiding the other three wastes a
  * round trip.
  */
-export function partition<T, E>(results: readonly Result<T, E>[]): {
+export function partition<T, E>(
+  results: readonly Result<T, E>[],
+): {
   values: T[];
   errors: E[];
 } {

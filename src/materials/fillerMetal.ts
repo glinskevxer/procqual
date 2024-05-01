@@ -2,7 +2,7 @@ import { parseClassification, type FillerClassification } from '../codes/classif
 import { needsAtmosphericControl } from '../codes/fnumber.js';
 import type { ProcessCode } from '../codes/process.js';
 import { ValidationError } from '../core/errors.js';
-import { inches, Length } from '../core/units.js';
+import { inches, type Length } from '../core/units.js';
 
 /**
  * The consumables the store room keeps.
@@ -178,13 +178,14 @@ const STOCK: readonly StockItem[] = [
 const BY_CODE = new Map(STOCK.map((item) => [item.code.toUpperCase(), item]));
 
 /** Dissimilar pairs the shop has a standing answer for. */
-const DISSIMILAR_ANSWERS: readonly { pair: readonly [string, string]; codes: readonly string[] }[] = [
-  { pair: ['1', '8'], codes: ['E309L-16', 'ER309L', 'ERNiCrMo-3'] },
-  { pair: ['1', '4'], codes: ['E8018-B2', 'ER80S-B2'] },
-  { pair: ['1', '5A'], codes: ['E9018-B3', 'ER90S-B3'] },
-  { pair: ['8', '10H'], codes: ['ER2209', 'ERNiCrMo-3'] },
-  { pair: ['1', '43'], codes: ['ERNiCrMo-3'] },
-];
+const DISSIMILAR_ANSWERS: readonly { pair: readonly [string, string]; codes: readonly string[] }[] =
+  [
+    { pair: ['1', '8'], codes: ['E309L-16', 'ER309L', 'ERNiCrMo-3'] },
+    { pair: ['1', '4'], codes: ['E8018-B2', 'ER80S-B2'] },
+    { pair: ['1', '5A'], codes: ['E9018-B3', 'ER90S-B3'] },
+    { pair: ['8', '10H'], codes: ['ER2209', 'ERNiCrMo-3'] },
+    { pair: ['1', '43'], codes: ['ERNiCrMo-3'] },
+  ];
 
 export function allStock(): readonly StockItem[] {
   return STOCK;

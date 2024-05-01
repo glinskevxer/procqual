@@ -36,9 +36,9 @@ describe('the ordinary groove coupon', () => {
 
   it('carries the bend note through so the shop knows which specimens to cut', () => {
     expect(buildTestPlan(question()).notes.join(' ')).toMatch(/either two face and two root/);
-    expect(
-      buildTestPlan(question({ couponThickness: inches('1') })).notes.join(' '),
-    ).toMatch(/four side bends/);
+    expect(buildTestPlan(question({ couponThickness: inches('1') })).notes.join(' ')).toMatch(
+      /four side bends/,
+    );
   });
 
   it('refuses a coupon with no thickness', () => {

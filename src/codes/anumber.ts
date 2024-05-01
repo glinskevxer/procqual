@@ -130,7 +130,13 @@ export function isANumber(code: number): boolean {
 
 export function parseANumber(value: string | number): number {
   const code =
-    typeof value === 'number' ? value : Number(String(value).trim().replace(/^A-?N?O?\.?\s*/i, ''));
+    typeof value === 'number'
+      ? value
+      : Number(
+          String(value)
+            .trim()
+            .replace(/^A-?N?O?\.?\s*/i, ''),
+        );
   if (!Number.isInteger(code) || !BY_CODE.has(code)) {
     throw new ValidationError('aNumber', `not an A number: ${value}`, { value });
   }

@@ -72,13 +72,17 @@ describe('the curves', () => {
 
 describe('the assessment', () => {
   it('exempts a vessel designed warmer than the curve', () => {
-    const assessment = assessToughness(question({ minimumDesignMetalTemperature: fahrenheit('50') }));
+    const assessment = assessToughness(
+      question({ minimumDesignMetalTemperature: fahrenheit('50') }),
+    );
     expect(assessment.required).toBe(false);
     expect(assessment.reason).toMatch(/at or above/);
   });
 
   it('calls for testing when the vessel is designed colder', () => {
-    const assessment = assessToughness(question({ minimumDesignMetalTemperature: fahrenheit('0') }));
+    const assessment = assessToughness(
+      question({ minimumDesignMetalTemperature: fahrenheit('0') }),
+    );
     expect(assessment.required).toBe(true);
     expect(assessment.reason).toMatch(/is below the curve B exemption/);
   });
@@ -95,7 +99,10 @@ describe('the assessment', () => {
   it('gives thirty degrees back for heat treatment the code did not ask for', () => {
     const plain = assessToughness(question({ minimumDesignMetalTemperature: fahrenheit('10') }));
     const treated = assessToughness(
-      question({ minimumDesignMetalTemperature: fahrenheit('10'), heatTreatedWhenNotRequired: true }),
+      question({
+        minimumDesignMetalTemperature: fahrenheit('10'),
+        heatTreatedWhenNotRequired: true,
+      }),
     );
     expect(plain.required).toBe(true);
     expect(treated.required).toBe(false);

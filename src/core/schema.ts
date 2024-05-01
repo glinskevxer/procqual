@@ -61,32 +61,35 @@ export const readBoolean: Reader<boolean> = (value, path) => {
   return err(issue(path, 'expected true or false'));
 };
 
-export const readDecimal: Reader<Decimal> = (value, path) => wrap(path, 'a decimal number', () => {
-  if (value instanceof Decimal) {
-    return value;
-  }
-  if (typeof value === 'number') {
-    return Decimal.fromNumber(value);
-  }
-  return Decimal.parse(String(value));
-});
+export const readDecimal: Reader<Decimal> = (value, path) =>
+  wrap(path, 'a decimal number', () => {
+    if (value instanceof Decimal) {
+      return value;
+    }
+    if (typeof value === 'number') {
+      return Decimal.fromNumber(value);
+    }
+    return Decimal.parse(String(value));
+  });
 
-export const readLength: Reader<Length> = (value, path) => wrap(path, 'a length', () => {
-  if (value instanceof Length) {
-    return value;
-  }
-  if (typeof value === 'number') {
-    return Length.ofInches(Decimal.fromNumber(value));
-  }
-  return Length.parse(String(value));
-});
+export const readLength: Reader<Length> = (value, path) =>
+  wrap(path, 'a length', () => {
+    if (value instanceof Length) {
+      return value;
+    }
+    if (typeof value === 'number') {
+      return Length.ofInches(Decimal.fromNumber(value));
+    }
+    return Length.parse(String(value));
+  });
 
-export const readDate: Reader<PlainDate> = (value, path) => wrap(path, 'a date', () => {
-  if (value instanceof PlainDate) {
-    return value;
-  }
-  return PlainDate.parse(String(value));
-});
+export const readDate: Reader<PlainDate> = (value, path) =>
+  wrap(path, 'a date', () => {
+    if (value instanceof PlainDate) {
+      return value;
+    }
+    return PlainDate.parse(String(value));
+  });
 
 export const readDocumentNumber: Reader<DocumentNumber> = (value, path) =>
   wrap(path, 'a document number', () => {
@@ -130,10 +133,15 @@ export function optional<T>(item: Reader<T>): Reader<T | undefined> {
 }
 
 export function withDefault<T>(item: Reader<T>, fallback: T): Reader<T> {
-  return (value, path) => (value === undefined || value === null ? ok(fallback) : item(value, path));
+  return (value, path) =>
+    value === undefined || value === null ? ok(fallback) : item(value, path);
 }
 
-export function refine<T>(item: Reader<T>, message: string, predicate: (value: T) => boolean): Reader<T> {
+export function refine<T>(
+  item: Reader<T>,
+  message: string,
+  predicate: (value: T) => boolean,
+): Reader<T> {
   return (value, path) => {
     const read = item(value, path);
     if (!read.ok) {
@@ -174,7 +182,9 @@ export function parseWith<T>(reader: Reader<T>, value: unknown): Result<T, Issue
 }
 
 export function describeIssues(issues: readonly Issue[]): string {
-  return issues.map((item) => `${item.path === '' ? '<root>' : item.path}: ${item.message}`).join('; ');
+  return issues
+    .map((item) => `${item.path === '' ? '<root>' : item.path}: ${item.message}`)
+    .join('; ');
 }
 
 function wrap<T>(path: string, what: string, read: () => T): Result<T, Issue[]> {

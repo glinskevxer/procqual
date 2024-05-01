@@ -109,9 +109,7 @@ describe('findings', () => {
   });
 
   it('renders a finding with its clause and subject', () => {
-    expect(describeFinding(list[1]!)).toBe(
-      'BLOCKING coupon thickness out of range [QW-451.1]',
-    );
+    expect(describeFinding(list[1]!)).toBe('BLOCKING coupon thickness out of range [QW-451.1]');
     expect(describeFinding(list[2]!)).toBe('DEFICIENCY J-14: radiography not filed');
     expect(describeFinding(list[0]!)).toBe('ADVISORY filler lot nearly exhausted');
   });

@@ -27,7 +27,7 @@ describe('appending', () => {
     const payload = { id: 'PQR-1' };
     const entry = write(journal, 'pqr.recorded', payload);
     payload.id = 'PQR-2';
-    expect(entry.payload['id']).toBe('PQR-1');
+    expect(entry.payload.id).toBe('PQR-1');
     expect(Object.isFrozen(entry.payload)).toBe(true);
   });
 

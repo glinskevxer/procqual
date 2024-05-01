@@ -1,7 +1,7 @@
 import { blocking, type Finding, advisory } from '../core/errors.js';
-import { Decimal, decimal } from '../core/decimal.js';
+import { type Decimal, decimal } from '../core/decimal.js';
 import { ValidationError } from '../core/errors.js';
-import { Length } from '../core/units.js';
+import { type Length } from '../core/units.js';
 
 /**
  * Reduced section tensile tests on a procedure coupon.

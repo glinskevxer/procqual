@@ -1,7 +1,7 @@
 import { Decimal, decimal } from '../core/decimal.js';
 import { advisory, blocking, deficiency, type Finding, ValidationError } from '../core/errors.js';
-import { Temperature } from '../core/temperature.js';
-import { inches, Length } from '../core/units.js';
+import { type Temperature } from '../core/temperature.js';
+import { inches, type Length } from '../core/units.js';
 
 /**
  * Charpy V notch testing.
@@ -166,7 +166,11 @@ export function evaluateImpacts(
         blocking(
           'impact.too_many_low_specimens',
           `${verdict.belowIndividual.length} specimens in the ${set.location} set are below the single specimen minimum`,
-          { clause: 'UG-84', subject: set.location, details: { specimens: verdict.belowIndividual } },
+          {
+            clause: 'UG-84',
+            subject: set.location,
+            details: { specimens: verdict.belowIndividual },
+          },
         ),
       );
     } else if (verdict.belowIndividual.length === 1) {

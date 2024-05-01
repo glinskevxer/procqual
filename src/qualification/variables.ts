@@ -119,7 +119,7 @@ const READERS: Readonly<Record<string, Reader>> = {
   'preheat.minimum': (v) => v.preheat.minimum,
   'preheat.maintenance': (v) => v.preheat.maintained,
   'preheat.interpassMaximum': (v) => v.preheat.interpassMaximum,
-  'pwht.condition': (v) => (v.pwht.applied ? (v.pwht.temperature ?? 'applied') : 'none'),
+  'pwht.condition': (v) => (v.pwht.applied ? v.pwht.temperature ?? 'applied' : 'none'),
   'pwht.holdingTime': (v) => v.pwht.holdingHours,
   'gas.shieldingComposition': (v) => v.gas.shieldingComposition,
   'gas.shieldingFlowRate': (v) => v.gas.shieldingFlowRate,
@@ -127,7 +127,8 @@ const READERS: Readonly<Record<string, Reader>> = {
   'electrical.currentPolarity': (v) => v.electrical.currentType,
   'electrical.transferMode': (v) => v.electrical.transferMode,
   'electrical.heatInput': (v) => v.electrical.heatInputMaximum,
-  'electrical.amperageRange': (v) => `${v.electrical.amperageLow.toString()}-${v.electrical.amperageHigh.toString()}`,
+  'electrical.amperageRange': (v) =>
+    `${v.electrical.amperageLow.toString()}-${v.electrical.amperageHigh.toString()}`,
   'technique.stringOrWeave': (v) => v.technique.beadType,
   'technique.multipleToSingle': (v) => v.technique.passesPerSide,
   'technique.peening': (v) => v.technique.peening,
@@ -182,11 +183,7 @@ export function describeValue(value: unknown): string {
   if (value === undefined) {
     return 'none';
   }
-  if (
-    value instanceof Length ||
-    value instanceof Temperature ||
-    value instanceof Decimal
-  ) {
+  if (value instanceof Length || value instanceof Temperature || value instanceof Decimal) {
     return value.toString();
   }
   return String(value);

@@ -93,9 +93,7 @@ describe('expect', () => {
   });
 
   it('throws with the message and the error text', () => {
-    vitestExpect(() => unwrapExpect(err('coupon failed'), 'setup')).toThrow(
-      'setup: coupon failed',
-    );
+    vitestExpect(() => unwrapExpect(err('coupon failed'), 'setup')).toThrow('setup: coupon failed');
   });
 
   it('describes an Error error', () => {

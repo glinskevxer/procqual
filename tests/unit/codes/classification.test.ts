@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  describeClassification,
-  parseClassification,
-} from '../../../src/codes/classification.js';
+import { describeClassification, parseClassification } from '../../../src/codes/classification.js';
 import { ValidationError } from '../../../src/core/errors.js';
 
 describe('covered electrodes', () => {

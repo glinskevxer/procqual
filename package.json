@@ -15,11 +15,19 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "lint": "eslint . --ext .ts,.cjs --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run lint && npm run typecheck && npm run test"
   },
   "devDependencies": {
     "@types/node": "20.11.4",
+    "@typescript-eslint/eslint-plugin": "7.8.0",
+    "@typescript-eslint/parser": "7.8.0",
     "@vitest/coverage-v8": "1.2.0",
+    "eslint": "8.57.0",
+    "prettier": "3.2.5",
     "typescript": "5.3.3",
     "vitest": "1.2.0"
   }

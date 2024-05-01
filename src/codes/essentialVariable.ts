@@ -141,7 +141,13 @@ const DEFINITIONS: readonly VariableDefinition[] = [
     group: 'filler-metals',
     label: 'filler metal diameter',
     processes: ARC_WITH_FILLER,
-    classes: { SMAW: 'nonessential', GTAW: 'nonessential', GMAW: 'nonessential', FCAW: 'nonessential', SAW: 'supplementary' },
+    classes: {
+      SMAW: 'nonessential',
+      GTAW: 'nonessential',
+      GMAW: 'nonessential',
+      FCAW: 'nonessential',
+      SAW: 'supplementary',
+    },
   },
   {
     key: 'filler.depositThickness',
@@ -245,7 +251,12 @@ const DEFINITIONS: readonly VariableDefinition[] = [
     group: 'gas',
     label: 'shielding gas flow rate',
     processes: ['GTAW', 'GMAW', 'FCAW', 'PAW'],
-    classes: { GTAW: 'nonessential', GMAW: 'nonessential', FCAW: 'nonessential', PAW: 'nonessential' },
+    classes: {
+      GTAW: 'nonessential',
+      GMAW: 'nonessential',
+      FCAW: 'nonessential',
+      PAW: 'nonessential',
+    },
   },
   {
     key: 'gas.backing',

@@ -71,9 +71,7 @@ describe('an essential change', () => {
   });
 
   it('describes what moved and where it moved to', () => {
-    expect(describeChange(comparison.essential[0]!)).toBe(
-      'base metal P number moved from 1 to 8',
-    );
+    expect(describeChange(comparison.essential[0]!)).toBe('base metal P number moved from 1 to 8');
   });
 });
 

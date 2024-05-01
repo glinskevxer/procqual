@@ -1,10 +1,10 @@
 import type { DepositAnalysis, Element } from '../codes/anumber.js';
 import { Decimal, decimal } from '../core/decimal.js';
 import { advisory, blocking, deficiency, type Finding, ValidationError } from '../core/errors.js';
-import { Interval } from '../core/interval.js';
-import { PlainDate } from '../core/plainDate.js';
-import { Temperature } from '../core/temperature.js';
-import { Length } from '../core/units.js';
+import { type Interval } from '../core/interval.js';
+import { type PlainDate } from '../core/plainDate.js';
+import { type Temperature } from '../core/temperature.js';
+import { type Length } from '../core/units.js';
 import { baseMetal, curveFor, type BaseMetalSpecification } from './baseMetal.js';
 
 /**
@@ -68,9 +68,17 @@ export function carbonEquivalent(chemistry: DepositAnalysis): Decimal {
   const molybdenum = chemistry.Mo ?? Decimal.zero();
   const nickel = chemistry.Ni ?? Decimal.zero();
   const manganeseTerm = manganese.divide(decimal('6'), 4);
-  const chromeGroup = chromium.add(molybdenum).add(chemistry.V ?? Decimal.zero()).divide(decimal('5'), 4);
+  const chromeGroup = chromium
+    .add(molybdenum)
+    .add(chemistry.V ?? Decimal.zero())
+    .divide(decimal('5'), 4);
   const nickelGroup = nickel.divide(decimal('15'), 4);
-  return carbon.add(manganeseTerm).add(chromeGroup).add(nickelGroup).round(3, 'half-up').normalized();
+  return carbon
+    .add(manganeseTerm)
+    .add(chromeGroup)
+    .add(nickelGroup)
+    .round(3, 'half-up')
+    .normalized();
 }
 
 export function certifiedCurve(heat: MaterialHeat): ReturnType<typeof curveFor> {
@@ -116,12 +124,12 @@ export function verifyCertificate(heat: MaterialHeat): readonly Finding[] {
     );
   }
   for (const [element, limit] of SUSPICIOUS) {
-    const value = heat.chemistry[element];
-    if (value !== undefined && value.greaterThan(decimal(limit))) {
+    if (heat.chemistry[element]?.greaterThan(decimal(limit)) === true) {
+      const value = heat.chemistry[element];
       findings.push(
         blocking(
           'heat.chemistry_out_of_band',
-          `${element} at ${value.toString()} percent in heat ${heat.heatNumber} is past the shop limit of ${limit}`,
+          `${element} at ${value?.toString() ?? ''} percent in heat ${heat.heatNumber} is past the shop limit of ${limit}`,
           { subject: heat.heatNumber },
         ),
       );

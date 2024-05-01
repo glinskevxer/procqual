@@ -81,8 +81,16 @@ describe('comparison', () => {
 
   it('picks the coldest and the hottest of a run of readings', () => {
     const readings = [fahrenheit('300'), fahrenheit('275'), fahrenheit('510')];
-    expect(coldest(readings[0]!, ...readings.slice(1)).toFahrenheit().toString()).toBe('275');
-    expect(hottest(readings[0]!, ...readings.slice(1)).toFahrenheit().toString()).toBe('510');
+    expect(
+      coldest(readings[0]!, ...readings.slice(1))
+        .toFahrenheit()
+        .toString(),
+    ).toBe('275');
+    expect(
+      hottest(readings[0]!, ...readings.slice(1))
+        .toFahrenheit()
+        .toString(),
+    ).toBe('510');
   });
 });
 

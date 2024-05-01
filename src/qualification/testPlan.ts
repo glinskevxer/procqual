@@ -1,9 +1,9 @@
 import { pNumberFacts } from '../codes/pnumber.js';
 import type { WeldType } from '../codes/position.js';
 import { advisory, type Finding, ValidationError } from '../core/errors.js';
-import { inches, Length } from '../core/units.js';
+import { inches, type Length } from '../core/units.js';
 import { requiredBends, type BendPlan } from './bend.js';
-import { hardnessRequirement, type HardnessQuestion } from './hardness.js';
+import { hardnessRequirement } from './hardness.js';
 
 /**
  * What has to be cut off a coupon before anyone can say it passed.
@@ -74,7 +74,9 @@ export function buildTestPlan(question: CouponPlanQuestion): TestPlan {
     ? ['weld', 'heat-affected-zone']
     : [];
   if (question.impactTestingRequired) {
-    notes.push('notch toughness required, so impact sets come from the weld and the heat affected zone');
+    notes.push(
+      'notch toughness required, so impact sets come from the weld and the heat affected zone',
+    );
   }
   if (hardness.required) {
     notes.push(`hardness survey: ${hardness.reason}`);

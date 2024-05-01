@@ -53,19 +53,11 @@ export class PlainDate {
 
   static fromEpochDay(days: number): PlainDate {
     const date = new Date(days * DAY_MS);
-    return new PlainDate(
-      date.getUTCFullYear(),
-      date.getUTCMonth() + 1,
-      date.getUTCDate(),
-    );
+    return new PlainDate(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
   }
 
   static fromInstant(instant: Date): PlainDate {
-    return new PlainDate(
-      instant.getUTCFullYear(),
-      instant.getUTCMonth() + 1,
-      instant.getUTCDate(),
-    );
+    return new PlainDate(instant.getUTCFullYear(), instant.getUTCMonth() + 1, instant.getUTCDate());
   }
 
   toEpochDay(): number {

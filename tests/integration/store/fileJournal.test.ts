@@ -132,6 +132,8 @@ describe('rewriting', () => {
     const journal = FileJournal.open(directory);
     write(journal, 'a');
     const entries = [...journal.read()];
-    expect(() => journal.rewrite([{ ...entries[0]!, actor: 'someone else' }])).toThrow(StorageError);
+    expect(() => journal.rewrite([{ ...entries[0]!, actor: 'someone else' }])).toThrow(
+      StorageError,
+    );
   });
 });

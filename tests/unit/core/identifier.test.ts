@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ValidationError } from '../../../src/core/errors.js';
-import {
-  DocumentNumber,
-  InMemorySequence,
-  nextNumber,
-} from '../../../src/core/identifier.js';
+import { DocumentNumber, InMemorySequence, nextNumber } from '../../../src/core/identifier.js';
 
 describe('parsing', () => {
   it('reads a plain number', () => {
@@ -95,12 +91,7 @@ describe('ordering', () => {
       DocumentNumber.parse('WPS-0001'),
     ];
     const sorted = [...numbers].sort((left, right) => left.compare(right));
-    expect(sorted.map(String)).toEqual([
-      'PQR-0010',
-      'WPS-0001',
-      'WPS-0001 Rev 2',
-      'WPS-0002',
-    ]);
+    expect(sorted.map(String)).toEqual(['PQR-0010', 'WPS-0001', 'WPS-0001 Rev 2', 'WPS-0002']);
   });
 
   it('treats identical numbers as equal', () => {

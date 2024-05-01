@@ -169,7 +169,7 @@ function coredFacts(
     usabilityCode: match[3] === undefined ? undefined : Number(match[3]),
     suffix,
     fNumber: 6,
-    aNumber: suffix === undefined ? 1 : (SUFFIX_TO_A[suffix] ?? 1),
+    aNumber: suffix === undefined ? 1 : SUFFIX_TO_A[suffix] ?? 1,
     lowHydrogen: true,
     allPosition: match[2] === '1',
   };
@@ -189,7 +189,7 @@ function wireFacts(
     usabilityCode: undefined,
     suffix,
     fNumber: 6,
-    aNumber: suffix === undefined ? 1 : (SUFFIX_TO_A[suffix] ?? 1),
+    aNumber: suffix === undefined ? 1 : SUFFIX_TO_A[suffix] ?? 1,
     lowHydrogen: true,
     allPosition: true,
   };

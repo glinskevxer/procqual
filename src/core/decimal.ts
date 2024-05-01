@@ -66,7 +66,9 @@ export class Decimal {
     if (!Number.isFinite(value)) {
       throw new ValidationError('value', 'not a finite number', { value });
     }
-    return Decimal.parse(value.toFixed(Math.min(MAX_SCALE, 10)).replace(/0+$/, '').replace(/\.$/, ''));
+    return Decimal.parse(
+      value.toFixed(Math.min(MAX_SCALE, 10)).replace(/0+$/, '').replace(/\.$/, ''),
+    );
   }
 
   getScale(): number {
@@ -228,7 +230,8 @@ function divideRounded(numerator: bigint, denominator: bigint, mode: RoundingMod
   if (remainder === 0n) {
     return negative ? -quotient : quotient;
   }
-  return negative ? -bump(quotient, remainder, absDenominator, true, mode)
+  return negative
+    ? -bump(quotient, remainder, absDenominator, true, mode)
     : bump(quotient, remainder, absDenominator, false, mode);
 }
 

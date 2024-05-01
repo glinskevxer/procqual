@@ -1,8 +1,8 @@
-import { Decimal, decimal } from '../core/decimal.js';
+import { type Decimal, decimal } from '../core/decimal.js';
 import { ValidationError } from '../core/errors.js';
 import { Interval } from '../core/interval.js';
-import { fahrenheit, Temperature } from '../core/temperature.js';
-import { inches, Length } from '../core/units.js';
+import { fahrenheit, type Temperature } from '../core/temperature.js';
+import { inches, type Length } from '../core/units.js';
 import { pNumberFacts } from './pnumber.js';
 
 /**
@@ -38,27 +38,132 @@ export interface PwhtRule {
 const NEVER = inches('0');
 
 const PREHEAT: Readonly<Record<string, PreheatRule>> = {
-  '1': { base: fahrenheit('50'), raised: fahrenheit('175'), stepThickness: inches('1.5'), strongMetalKsi: 71 },
-  '3': { base: fahrenheit('50'), raised: fahrenheit('175'), stepThickness: inches('0.625'), strongMetalKsi: 71 },
-  '4': { base: fahrenheit('200'), raised: fahrenheit('250'), stepThickness: inches('0.5'), strongMetalKsi: 60 },
-  '5A': { base: fahrenheit('300'), raised: fahrenheit('400'), stepThickness: inches('0.5'), strongMetalKsi: 60 },
-  '5B': { base: fahrenheit('400'), raised: fahrenheit('400'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '5C': { base: fahrenheit('400'), raised: fahrenheit('400'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '6': { base: fahrenheit('400'), raised: fahrenheit('400'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '7': { base: fahrenheit('300'), raised: fahrenheit('300'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '8': { base: fahrenheit('50'), raised: fahrenheit('50'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '9A': { base: fahrenheit('200'), raised: fahrenheit('250'), stepThickness: inches('0.625'), strongMetalKsi: 71 },
-  '9B': { base: fahrenheit('250'), raised: fahrenheit('300'), stepThickness: inches('0.625'), strongMetalKsi: 71 },
-  '10H': { base: fahrenheit('50'), raised: fahrenheit('50'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '11A': { base: fahrenheit('200'), raised: fahrenheit('300'), stepThickness: inches('0.5'), strongMetalKsi: 71 },
-  '15E': { base: fahrenheit('400'), raised: fahrenheit('400'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '21': { base: fahrenheit('50'), raised: fahrenheit('50'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '22': { base: fahrenheit('50'), raised: fahrenheit('50'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '23': { base: fahrenheit('50'), raised: fahrenheit('50'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '41': { base: fahrenheit('50'), raised: fahrenheit('50'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '42': { base: fahrenheit('50'), raised: fahrenheit('50'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '43': { base: fahrenheit('50'), raised: fahrenheit('50'), stepThickness: NEVER, strongMetalKsi: 0 },
-  '45': { base: fahrenheit('50'), raised: fahrenheit('50'), stepThickness: NEVER, strongMetalKsi: 0 },
+  '1': {
+    base: fahrenheit('50'),
+    raised: fahrenheit('175'),
+    stepThickness: inches('1.5'),
+    strongMetalKsi: 71,
+  },
+  '3': {
+    base: fahrenheit('50'),
+    raised: fahrenheit('175'),
+    stepThickness: inches('0.625'),
+    strongMetalKsi: 71,
+  },
+  '4': {
+    base: fahrenheit('200'),
+    raised: fahrenheit('250'),
+    stepThickness: inches('0.5'),
+    strongMetalKsi: 60,
+  },
+  '5A': {
+    base: fahrenheit('300'),
+    raised: fahrenheit('400'),
+    stepThickness: inches('0.5'),
+    strongMetalKsi: 60,
+  },
+  '5B': {
+    base: fahrenheit('400'),
+    raised: fahrenheit('400'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '5C': {
+    base: fahrenheit('400'),
+    raised: fahrenheit('400'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '6': {
+    base: fahrenheit('400'),
+    raised: fahrenheit('400'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '7': {
+    base: fahrenheit('300'),
+    raised: fahrenheit('300'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '8': {
+    base: fahrenheit('50'),
+    raised: fahrenheit('50'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '9A': {
+    base: fahrenheit('200'),
+    raised: fahrenheit('250'),
+    stepThickness: inches('0.625'),
+    strongMetalKsi: 71,
+  },
+  '9B': {
+    base: fahrenheit('250'),
+    raised: fahrenheit('300'),
+    stepThickness: inches('0.625'),
+    strongMetalKsi: 71,
+  },
+  '10H': {
+    base: fahrenheit('50'),
+    raised: fahrenheit('50'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '11A': {
+    base: fahrenheit('200'),
+    raised: fahrenheit('300'),
+    stepThickness: inches('0.5'),
+    strongMetalKsi: 71,
+  },
+  '15E': {
+    base: fahrenheit('400'),
+    raised: fahrenheit('400'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '21': {
+    base: fahrenheit('50'),
+    raised: fahrenheit('50'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '22': {
+    base: fahrenheit('50'),
+    raised: fahrenheit('50'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '23': {
+    base: fahrenheit('50'),
+    raised: fahrenheit('50'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '41': {
+    base: fahrenheit('50'),
+    raised: fahrenheit('50'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '42': {
+    base: fahrenheit('50'),
+    raised: fahrenheit('50'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '43': {
+    base: fahrenheit('50'),
+    raised: fahrenheit('50'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
+  '45': {
+    base: fahrenheit('50'),
+    raised: fahrenheit('50'),
+    stepThickness: NEVER,
+    strongMetalKsi: 0,
+  },
 };
 
 const PWHT: Readonly<Record<string, PwhtRule>> = {

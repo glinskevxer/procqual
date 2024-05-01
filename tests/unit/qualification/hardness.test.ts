@@ -67,9 +67,9 @@ describe('when a survey is called for', () => {
 describe('reading a survey', () => {
   it('lists the zones it crossed in a fixed order', () => {
     expect(zonesCovered(survey())).toEqual(['parent', 'heat-affected-zone', 'weld']);
-    expect(
-      zonesCovered(survey({ readings: [{ zone: 'weld', value: decimal('200') }] })),
-    ).toEqual(['weld']);
+    expect(zonesCovered(survey({ readings: [{ zone: 'weld', value: decimal('200') }] }))).toEqual([
+      'weld',
+    ]);
   });
 
   it('finds the highest reading', () => {

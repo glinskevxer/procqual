@@ -154,10 +154,7 @@ export function formatFraction(value: Decimal, denominator = 16): string {
   }
   const negative = value.isNegative();
   const absolute = value.abs();
-  const ticks = absolute
-    .multiply(Decimal.fromInteger(denominator))
-    .round(0, 'half-up')
-    .toNumber();
+  const ticks = absolute.multiply(Decimal.fromInteger(denominator)).round(0, 'half-up').toNumber();
   const whole = Math.floor(ticks / denominator);
   let numerator = ticks - whole * denominator;
   let bottom = denominator;

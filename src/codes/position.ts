@@ -48,12 +48,48 @@ export interface PositionFacts {
 }
 
 const FACTS: Readonly<Record<TestPosition, PositionFacts>> = {
-  '1G': { code: '1G', weldType: 'groove', couponForm: 'either', axisFixed: false, description: 'flat, rolled' },
-  '2G': { code: '2G', weldType: 'groove', couponForm: 'either', axisFixed: true, description: 'horizontal' },
-  '3G': { code: '3G', weldType: 'groove', couponForm: 'plate', axisFixed: true, description: 'vertical' },
-  '4G': { code: '4G', weldType: 'groove', couponForm: 'plate', axisFixed: true, description: 'overhead' },
-  '5G': { code: '5G', weldType: 'groove', couponForm: 'pipe', axisFixed: true, description: 'horizontal axis, fixed' },
-  '6G': { code: '6G', weldType: 'groove', couponForm: 'pipe', axisFixed: true, description: 'inclined axis, fixed' },
+  '1G': {
+    code: '1G',
+    weldType: 'groove',
+    couponForm: 'either',
+    axisFixed: false,
+    description: 'flat, rolled',
+  },
+  '2G': {
+    code: '2G',
+    weldType: 'groove',
+    couponForm: 'either',
+    axisFixed: true,
+    description: 'horizontal',
+  },
+  '3G': {
+    code: '3G',
+    weldType: 'groove',
+    couponForm: 'plate',
+    axisFixed: true,
+    description: 'vertical',
+  },
+  '4G': {
+    code: '4G',
+    weldType: 'groove',
+    couponForm: 'plate',
+    axisFixed: true,
+    description: 'overhead',
+  },
+  '5G': {
+    code: '5G',
+    weldType: 'groove',
+    couponForm: 'pipe',
+    axisFixed: true,
+    description: 'horizontal axis, fixed',
+  },
+  '6G': {
+    code: '6G',
+    weldType: 'groove',
+    couponForm: 'pipe',
+    axisFixed: true,
+    description: 'inclined axis, fixed',
+  },
   '6GR': {
     code: '6GR',
     weldType: 'groove',
@@ -61,11 +97,41 @@ const FACTS: Readonly<Record<TestPosition, PositionFacts>> = {
     axisFixed: true,
     description: 'inclined axis with a restriction ring',
   },
-  '1F': { code: '1F', weldType: 'fillet', couponForm: 'either', axisFixed: false, description: 'flat, rolled' },
-  '2F': { code: '2F', weldType: 'fillet', couponForm: 'either', axisFixed: true, description: 'horizontal' },
-  '3F': { code: '3F', weldType: 'fillet', couponForm: 'plate', axisFixed: true, description: 'vertical' },
-  '4F': { code: '4F', weldType: 'fillet', couponForm: 'plate', axisFixed: true, description: 'overhead' },
-  '5F': { code: '5F', weldType: 'fillet', couponForm: 'pipe', axisFixed: true, description: 'horizontal axis, fixed' },
+  '1F': {
+    code: '1F',
+    weldType: 'fillet',
+    couponForm: 'either',
+    axisFixed: false,
+    description: 'flat, rolled',
+  },
+  '2F': {
+    code: '2F',
+    weldType: 'fillet',
+    couponForm: 'either',
+    axisFixed: true,
+    description: 'horizontal',
+  },
+  '3F': {
+    code: '3F',
+    weldType: 'fillet',
+    couponForm: 'plate',
+    axisFixed: true,
+    description: 'vertical',
+  },
+  '4F': {
+    code: '4F',
+    weldType: 'fillet',
+    couponForm: 'plate',
+    axisFixed: true,
+    description: 'overhead',
+  },
+  '5F': {
+    code: '5F',
+    weldType: 'fillet',
+    couponForm: 'pipe',
+    axisFixed: true,
+    description: 'horizontal axis, fixed',
+  },
 };
 
 interface QualifiedPositions {
@@ -99,7 +165,7 @@ export function parseTestPosition(value: string): TestPosition {
   if (!isTestPosition(upper)) {
     throw new ValidationError('position', `not a test position: ${value}`, { value });
   }
-  return upper as TestPosition;
+  return upper;
 }
 
 export function positionFacts(code: TestPosition): PositionFacts {
@@ -138,10 +204,7 @@ export function combinedPositions(
   return ALL.filter((position) => found.has(position));
 }
 
-export function qualifiesAllPositions(
-  tests: readonly TestPosition[],
-  weldType: WeldType,
-): boolean {
+export function qualifiesAllPositions(tests: readonly TestPosition[], weldType: WeldType): boolean {
   return combinedPositions(tests, weldType).length === ALL.length;
 }
 

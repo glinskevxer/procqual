@@ -1,7 +1,7 @@
-import { Decimal, decimal } from '../core/decimal.js';
+import { type Decimal, decimal } from '../core/decimal.js';
 import { ValidationError } from '../core/errors.js';
-import { fahrenheit, Temperature } from '../core/temperature.js';
-import { inches, Length } from '../core/units.js';
+import { fahrenheit, type Temperature } from '../core/temperature.js';
+import { inches, type Length } from '../core/units.js';
 
 /**
  * Whether the job needs notch toughness at all.

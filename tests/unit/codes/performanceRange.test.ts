@@ -79,9 +79,9 @@ describe('diameter', () => {
   });
 
   it('drops the floor to one inch through the middle band', () => {
-    expect(qualifiedDiameter(pipeCoupon({ outsideDiameter: inches('1') })).lower?.toFraction()).toBe(
-      '1',
-    );
+    expect(
+      qualifiedDiameter(pipeCoupon({ outsideDiameter: inches('1') })).lower?.toFraction(),
+    ).toBe('1');
     expect(
       qualifiedDiameter(pipeCoupon({ outsideDiameter: inches('2.875') })).lower?.toFraction(),
     ).toBe('1');
@@ -89,7 +89,9 @@ describe('diameter', () => {
 
   it('holds the floor at two and seven eighths above that band', () => {
     expect(
-      qualifiedDiameter(pipeCoupon({ outsideDiameter: inches('6') })).lower?.toInches().toString(),
+      qualifiedDiameter(pipeCoupon({ outsideDiameter: inches('6') }))
+        .lower?.toInches()
+        .toString(),
     ).toBe('2.875');
   });
 

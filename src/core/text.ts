@@ -41,9 +41,19 @@ export function renderTable<T>(
     return Math.max(column.header.length, longest);
   });
   const lines: string[] = [];
-  lines.push(joinCells(columns.map((column, index) => pad(column.header, widths[index] ?? 0, 'left')), gap));
+  lines.push(
+    joinCells(
+      columns.map((column, index) => pad(column.header, widths[index] ?? 0, 'left')),
+      gap,
+    ),
+  );
   if (options.rule !== false) {
-    lines.push(joinCells(widths.map((width) => '-'.repeat(width)), gap));
+    lines.push(
+      joinCells(
+        widths.map((width) => '-'.repeat(width)),
+        gap,
+      ),
+    );
   }
   for (const row of cells) {
     lines.push(

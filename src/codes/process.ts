@@ -108,7 +108,7 @@ export function parseProcess(value: string): ProcessCode {
       known: PROCESS_CODES,
     });
   }
-  return upper as ProcessCode;
+  return upper;
 }
 
 export function processFacts(code: ProcessCode): ProcessFacts {

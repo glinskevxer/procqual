@@ -119,7 +119,14 @@ export function isFNumber(value: number): boolean {
 }
 
 export function parseFNumber(value: string | number): number {
-  const code = typeof value === 'number' ? value : Number(String(value).trim().replace(/^F-?N?O?\.?\s*/i, ''));
+  const code =
+    typeof value === 'number'
+      ? value
+      : Number(
+          String(value)
+            .trim()
+            .replace(/^F-?N?O?\.?\s*/i, ''),
+        );
   if (!Number.isInteger(code) || !BY_CODE.has(code)) {
     throw new ValidationError('fNumber', `not an F number this shop carries: ${value}`, {
       value,

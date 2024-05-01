@@ -96,9 +96,9 @@ describe('what opened up', () => {
   });
 
   it('holds the heat affected zone to the same eighth as the weld', () => {
-    expect(discontinuityAccepted(tear({ location: 'heat-affected-zone', size: inches('0.2') }))).toBe(
-      false,
-    );
+    expect(
+      discontinuityAccepted(tear({ location: 'heat-affected-zone', size: inches('0.2') })),
+    ).toBe(false);
   });
 
   it('ignores anything out in the base metal', () => {
@@ -117,7 +117,12 @@ describe('evaluating a set of bends', () => {
   });
 
   it('refuses a specimen type the thickness does not allow', () => {
-    const specimens = [clean('B1', 'face'), clean('B2', 'face'), clean('B3', 'face'), clean('B4', 'face')];
+    const specimens = [
+      clean('B1', 'face'),
+      clean('B2', 'face'),
+      clean('B3', 'face'),
+      clean('B4', 'face'),
+    ];
     const findings = evaluateBends(specimens, inches('1'));
     expect(findings.filter((item) => item.code === 'bend.wrong_specimen_type')).toHaveLength(4);
   });

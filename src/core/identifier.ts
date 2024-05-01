@@ -19,7 +19,12 @@ export class DocumentNumber {
   readonly revision: number | undefined;
   private readonly width: number;
 
-  private constructor(series: string, sequence: number, revision: number | undefined, width: number) {
+  private constructor(
+    series: string,
+    sequence: number,
+    revision: number | undefined,
+    width: number,
+  ) {
     this.series = series;
     this.sequence = sequence;
     this.revision = revision;

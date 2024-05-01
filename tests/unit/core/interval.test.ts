@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { decimal } from '../../../src/core/decimal.js';
 import { ValidationError } from '../../../src/core/errors.js';
 import { Interval } from '../../../src/core/interval.js';
-import { inches, Length } from '../../../src/core/units.js';
+import { inches, type Length } from '../../../src/core/units.js';
 
 const d = decimal;
 

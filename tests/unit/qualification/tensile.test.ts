@@ -62,9 +62,9 @@ describe('the relaxation', () => {
   it('saves a specimen that would otherwise fail', () => {
     const low = specimen({ ultimateLoadPounds: decimal('19000') });
     expect(evaluateSpecimen(low, requirement).accepted).toBe(false);
-    expect(
-      evaluateSpecimen({ ...low, failureLocation: 'base-metal' }, requirement).accepted,
-    ).toBe(true);
+    expect(evaluateSpecimen({ ...low, failureLocation: 'base-metal' }, requirement).accepted).toBe(
+      true,
+    );
   });
 
   it('does not save a specimen that broke in the weld', () => {
@@ -75,7 +75,10 @@ describe('the relaxation', () => {
 
 describe('evaluating a set', () => {
   it('accepts two good specimens with nothing to report', () => {
-    const { results, findings } = evaluateTensile([specimen(), specimen({ id: 'T2' })], requirement);
+    const { results, findings } = evaluateTensile(
+      [specimen(), specimen({ id: 'T2' })],
+      requirement,
+    );
     expect(results.every((result) => result.accepted)).toBe(true);
     expect(findings).toEqual([]);
   });

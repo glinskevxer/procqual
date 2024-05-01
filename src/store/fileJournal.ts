@@ -59,7 +59,11 @@ export class FileJournal implements Journal {
     }
   }
 
-  static open(directory: string, name = 'journal.ndjson', options: FileJournalOptions = {}): FileJournal {
+  static open(
+    directory: string,
+    name = 'journal.ndjson',
+    options: FileJournalOptions = {},
+  ): FileJournal {
     return new FileJournal(join(directory, name), options);
   }
 
@@ -99,7 +103,11 @@ export class FileJournal implements Journal {
   rewrite(entries: readonly JournalEntry[]): void {
     requireIntact(entries);
     const temporary = `${this.path}.rewrite`;
-    writeFileSync(temporary, `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`, 'utf8');
+    writeFileSync(
+      temporary,
+      `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`,
+      'utf8',
+    );
     renameSync(temporary, this.path);
     this.entries.length = 0;
     this.entries.push(...entries);

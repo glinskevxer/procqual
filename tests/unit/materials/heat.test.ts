@@ -46,7 +46,11 @@ describe('reading a certificate', () => {
   it('catches a tensile below the specification', () => {
     const findings = verifyCertificate(
       heat({
-        mechanical: { tensileKsi: decimal('68'), yieldKsi: decimal('44'), elongationPercent: decimal('26') },
+        mechanical: {
+          tensileKsi: decimal('68'),
+          yieldKsi: decimal('44'),
+          elongationPercent: decimal('26'),
+        },
       }),
     );
     expect(findings.map((item) => item.code)).toContain('heat.tensile_below_specification');
@@ -56,7 +60,11 @@ describe('reading a certificate', () => {
   it('catches a yield below the specification', () => {
     const findings = verifyCertificate(
       heat({
-        mechanical: { tensileKsi: decimal('76'), yieldKsi: decimal('35'), elongationPercent: decimal('26') },
+        mechanical: {
+          tensileKsi: decimal('76'),
+          yieldKsi: decimal('35'),
+          elongationPercent: decimal('26'),
+        },
       }),
     );
     expect(findings.map((item) => item.code)).toContain('heat.yield_below_specification');
@@ -65,7 +73,11 @@ describe('reading a certificate', () => {
   it('catches a certificate transcribed with the yield above the tensile', () => {
     const findings = verifyCertificate(
       heat({
-        mechanical: { tensileKsi: decimal('76'), yieldKsi: decimal('80'), elongationPercent: decimal('26') },
+        mechanical: {
+          tensileKsi: decimal('76'),
+          yieldKsi: decimal('80'),
+          elongationPercent: decimal('26'),
+        },
       }),
     );
     expect(findings.map((item) => item.code)).toContain('heat.impossible_mechanicals');
@@ -86,9 +98,7 @@ describe('reading a certificate', () => {
 
 describe('carbon equivalent', () => {
   it('adds the alloying groups in their own proportions', () => {
-    expect(
-      carbonEquivalent({ C: decimal('0.18'), Mn: decimal('1.20') }).toString(),
-    ).toBe('0.38');
+    expect(carbonEquivalent({ C: decimal('0.18'), Mn: decimal('1.20') }).toString()).toBe('0.38');
   });
 
   it('is just the carbon for a plain analysis', () => {
@@ -109,7 +119,11 @@ describe('carbon equivalent', () => {
     const findings = verifyCertificate(
       heat({
         specification: 'SA-335 P22',
-        mechanical: { tensileKsi: decimal('70'), yieldKsi: decimal('40'), elongationPercent: decimal('22') },
+        mechanical: {
+          tensileKsi: decimal('70'),
+          yieldKsi: decimal('40'),
+          elongationPercent: decimal('22'),
+        },
         chemistry: { C: decimal('0.12'), Cr: decimal('2.20'), Mo: decimal('1.00') },
       }),
     );
@@ -128,7 +142,11 @@ describe('the curve on the certificate', () => {
       heat({
         specification: 'SA-537 Cl 1',
         normalised: true,
-        mechanical: { tensileKsi: decimal('76'), yieldKsi: decimal('55'), elongationPercent: decimal('24') },
+        mechanical: {
+          tensileKsi: decimal('76'),
+          yieldKsi: decimal('55'),
+          elongationPercent: decimal('24'),
+        },
       }),
     );
     const note = findings.find((item) => item.code === 'heat.normalising_bought_nothing');
@@ -173,8 +191,8 @@ describe('thickness against the order', () => {
   });
 
   it('refuses a heat with no thickness at all', () => {
-    expect(() =>
-      thicknessAccepted(heat({ thickness: inches('0') }), Interval.unbounded()),
-    ).toThrow(ValidationError);
+    expect(() => thicknessAccepted(heat({ thickness: inches('0') }), Interval.unbounded())).toThrow(
+      ValidationError,
+    );
   });
 });

@@ -42,9 +42,9 @@ describe('base metal range', () => {
   it('goes to a flat eight inches from three quarters up', () => {
     const range = qualifiedBaseMetalRange(coupon({ couponThickness: inches('3/4') }));
     expect(range.upper?.toFraction()).toBe('8');
-    expect(qualifiedBaseMetalRange(coupon({ couponThickness: inches('2') })).upper?.toFraction()).toBe(
-      '8',
-    );
+    expect(
+      qualifiedBaseMetalRange(coupon({ couponThickness: inches('2') })).upper?.toFraction(),
+    ).toBe('8');
   });
 
   it('drops back to a third again over the coupon at six inches', () => {
@@ -167,8 +167,8 @@ describe('explaining the ceiling', () => {
       /flat eight inches/,
     );
     expect(explainBaseMetalCeiling(coupon({ couponThickness: inches('7') }))).toMatch(/1.33/);
-    expect(
-      explainBaseMetalCeiling(coupon({ heatTreatedAboveTransformation: true })),
-    ).toMatch(/upper transformation temperature/);
+    expect(explainBaseMetalCeiling(coupon({ heatTreatedAboveTransformation: true }))).toMatch(
+      /upper transformation temperature/,
+    );
   });
 });

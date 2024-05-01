@@ -36,10 +36,18 @@ const set = (energies: readonly string[], overrides: Partial<ImpactSet> = {}): I
 
 describe('the requirement', () => {
   it('steps with the strength of the base metal', () => {
-    expect(requiredEnergy({ ...requirement, specifiedMinimumTensileKsi: 60 }, '10').average.toString()).toBe('13');
-    expect(requiredEnergy({ ...requirement, specifiedMinimumTensileKsi: 70 }, '10').average.toString()).toBe('15');
-    expect(requiredEnergy({ ...requirement, specifiedMinimumTensileKsi: 80 }, '10').average.toString()).toBe('20');
-    expect(requiredEnergy({ ...requirement, specifiedMinimumTensileKsi: 110 }, '10').average.toString()).toBe('25');
+    expect(
+      requiredEnergy({ ...requirement, specifiedMinimumTensileKsi: 60 }, '10').average.toString(),
+    ).toBe('13');
+    expect(
+      requiredEnergy({ ...requirement, specifiedMinimumTensileKsi: 70 }, '10').average.toString(),
+    ).toBe('15');
+    expect(
+      requiredEnergy({ ...requirement, specifiedMinimumTensileKsi: 80 }, '10').average.toString(),
+    ).toBe('20');
+    expect(
+      requiredEnergy({ ...requirement, specifiedMinimumTensileKsi: 110 }, '10').average.toString(),
+    ).toBe('25');
   });
 
   it('holds the single specimen figure below the average figure', () => {
