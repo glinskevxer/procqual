@@ -1,0 +1,71 @@
+import { Command } from 'commander';
+
+import { ArcError } from '../core/errors.js';
+import { codesCommand } from './commands/codes.js';
+import type { Output } from './output.js';
+
+export const VERSION = '0.1.0';
+
+/**
+ * Builds the whole command tree against an injected output.
+ *
+ * Nothing in here writes to the process streams itself and nothing calls
+ * `process.exit`, so the same tree is what the tests drive.
+ */
+export function buildProgram(out: Output): Command {
+  const program = new Command('arc')
+    .description('weld procedure qualification and joint traceability')
+    .version(VERSION)
+    .showHelpAfterError()
+    .exitOverride()
+    .configureOutput({
+      // Commander writes help and its own errors straight to the process
+      // streams otherwise, which puts half the output somewhere the tests
+      // cannot see and the other half through the recorder.
+      writeOut: (text) => {
+        out.line(text.replace(/\n$/, ''));
+      },
+      writeErr: (text) => {
+        out.error(text.replace(/\n$/, ''));
+      },
+    });
+
+  program.addCommand(codesCommand(out));
+  return program;
+}
+
+export interface RunResult {
+  readonly code: number;
+}
+
+export async function run(argv: readonly string[], out: Output): Promise<RunResult> {
+  const program = buildProgram(out);
+  try {
+    await program.parseAsync([...argv], { from: 'user' });
+    return { code: 0 };
+  } catch (error) {
+    if (error instanceof ArcError) {
+      out.error(`${error.code}: ${error.message}`);
+      return { code: 2 };
+    }
+    if (isCommanderExit(error)) {
+      return { code: error.exitCode };
+    }
+    out.error(error instanceof Error ? error.message : String(error));
+    return { code: 1 };
+  }
+}
+
+interface CommanderExit {
+  readonly code: string;
+  readonly exitCode: number;
+}
+
+function isCommanderExit(error: unknown): error is CommanderExit {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'exitCode' in error &&
+    typeof (error as { exitCode: unknown }).exitCode === 'number'
+  );
+}

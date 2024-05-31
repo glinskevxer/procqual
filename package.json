@@ -19,7 +19,8 @@
     "lint": "eslint . --ext .ts,.cjs --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run lint && npm run typecheck && npm run test"
+    "check": "npm run lint && npm run typecheck && npm run test",
+    "arc": "tsx src/cli/main.ts"
   },
   "devDependencies": {
     "@types/node": "20.11.4",
@@ -28,7 +29,14 @@
     "@vitest/coverage-v8": "1.2.0",
     "eslint": "8.57.0",
     "prettier": "3.2.5",
+    "tsx": "4.11.0",
     "typescript": "5.3.3",
     "vitest": "1.2.0"
+  },
+  "bin": {
+    "arc": "./dist/cli/main.js"
+  },
+  "dependencies": {
+    "commander": "12.1.0"
   }
 }
