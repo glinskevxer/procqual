@@ -1,5 +1,5 @@
 import type { ProcessCode, TransferMode } from '../codes/process.js';
-import type { TestPosition } from '../codes/position.js';
+import type { Progression, TestPosition } from '../codes/position.js';
 import { Decimal } from '../core/decimal.js';
 import { ValidationError } from '../core/errors.js';
 import { Temperature } from '../core/temperature.js';
@@ -16,8 +16,6 @@ import { allVariables } from '../codes/essentialVariable.js';
  */
 
 export type CurrentType = 'AC' | 'DCEN' | 'DCEP';
-
-export type Progression = 'uphill' | 'downhill' | 'not-applicable';
 
 export interface JointVariables {
   readonly grooveDesign: string;

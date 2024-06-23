@@ -35,7 +35,11 @@ export type WeldType = 'groove' | 'fillet';
 
 export type ProductForm = 'plate' | 'pipe';
 
-/** Uphill and downhill behave differently enough to be tracked separately. */
+/**
+ * Uphill and downhill behave differently enough to be tracked separately, and
+ * `not-applicable` is a third real answer rather than a missing one: a flat
+ * coupon has no progression and never will have.
+ */
 export type Progression = 'uphill' | 'downhill' | 'not-applicable';
 
 export interface PositionFacts {
@@ -225,6 +229,28 @@ export function coversProductForm(couponForm: ProductForm, production: ProductFo
 export function describePosition(code: TestPosition): string {
   const facts = positionFacts(code);
   return `${facts.code} ${facts.weldType} ${facts.description}`;
+}
+
+/**
+ * Whether a coupon welded in one progression covers a joint run in another.
+ *
+ * Progression only exists on a vertical weld, so anywhere else the question
+ * does not arise and the answer is yes. A coupon that recorded no progression
+ * covers anything for the same reason: there was no vertical run on it to
+ * record one from.
+ */
+export function progressionCovers(
+  qualified: Progression,
+  joint: Progression,
+  position: ProductionPosition,
+): boolean {
+  if (position !== 'vertical') {
+    return true;
+  }
+  if (qualified === 'not-applicable' || joint === 'not-applicable') {
+    return true;
+  }
+  return qualified === joint;
 }
 
 export function positionsForWeldType(weldType: WeldType): readonly TestPosition[] {

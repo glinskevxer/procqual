@@ -2,8 +2,10 @@ import { fNumbersQualifiedBy } from '../codes/fnumber.js';
 import {
   coversProductForm,
   positionsQualifiedBy,
+  progressionCovers,
   type ProductForm,
   type ProductionPosition,
+  type Progression,
   type WeldType,
 } from '../codes/position.js';
 import {
@@ -65,7 +67,7 @@ export interface PerformanceScope {
   readonly depositThickness: Interval<Length>;
   readonly diameter: Interval<Length>;
   readonly backedJointsOnly: boolean;
-  readonly progression: PerformanceQualification['verticalProgression'];
+  readonly progression: Progression;
 }
 
 export function couponOf(qualification: PerformanceQualification): PerformanceCoupon {
@@ -107,7 +109,7 @@ export interface JointRequirement {
   readonly weldType: WeldType;
   readonly productForm: ProductForm;
   readonly position: ProductionPosition;
-  readonly progression: PerformanceQualification['verticalProgression'];
+  readonly progression: Progression;
   readonly fNumber: number;
   readonly pNumber: string;
   readonly depositThickness: Length;
@@ -157,11 +159,7 @@ export function scopeMisses(
       detail: `the ${joint.position} position is outside ${positions.join(', ') || 'nothing'}`,
     });
   }
-  if (
-    joint.position === 'vertical' &&
-    scope.progression !== 'not-applicable' &&
-    joint.progression !== scope.progression
-  ) {
+  if (!progressionCovers(scope.progression, joint.progression, joint.position)) {
     misses.push({
       field: 'progression',
       detail: `qualified ${scope.progression} and the joint is ${joint.progression}`,

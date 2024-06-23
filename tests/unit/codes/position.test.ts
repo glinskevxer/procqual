@@ -9,6 +9,7 @@ import {
   positionFacts,
   positionsForWeldType,
   positionsQualifiedBy,
+  progressionCovers,
   qualifiesAllPositions,
 } from '../../../src/codes/position.js';
 import { ValidationError } from '../../../src/core/errors.js';
@@ -86,6 +87,25 @@ describe('what a coupon qualifies', () => {
   it('keeps the combined list in a stable order', () => {
     expect(combinedPositions(['4G', '3G'], 'groove')).toEqual(['flat', 'vertical', 'overhead']);
     expect(combinedPositions([], 'groove')).toEqual([]);
+  });
+});
+
+describe('vertical progression', () => {
+  it('does not arise anywhere but a vertical joint', () => {
+    expect(progressionCovers('uphill', 'downhill', 'flat')).toBe(true);
+    expect(progressionCovers('uphill', 'downhill', 'horizontal')).toBe(true);
+    expect(progressionCovers('uphill', 'downhill', 'overhead')).toBe(true);
+  });
+
+  it('has to match on a vertical joint', () => {
+    expect(progressionCovers('uphill', 'uphill', 'vertical')).toBe(true);
+    expect(progressionCovers('uphill', 'downhill', 'vertical')).toBe(false);
+    expect(progressionCovers('downhill', 'uphill', 'vertical')).toBe(false);
+  });
+
+  it('is not asked of a coupon that had no vertical run to record one from', () => {
+    expect(progressionCovers('not-applicable', 'uphill', 'vertical')).toBe(true);
+    expect(progressionCovers('uphill', 'not-applicable', 'vertical')).toBe(true);
   });
 });
 

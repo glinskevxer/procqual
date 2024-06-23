@@ -11,7 +11,7 @@ import { evaluateHardness, hardnessRequirement } from './hardness.js';
 import { evaluateImpacts } from './impact.js';
 import { governingTensile, reviewRecord, type ProcedureQualificationRecord } from './pqr.js';
 import { evaluateTensile, type TensileResult } from './tensile.js';
-import { buildTestPlan, reviewPlan, type TestPlan } from './testPlan.js';
+import { buildTestPlan, reviewPlan, type CouponPlanQuestion, type TestPlan } from './testPlan.js';
 
 /**
  * The whole verdict on one coupon.
@@ -49,27 +49,16 @@ export function evaluateCoupon(
   const layer = record.layers[0];
   const pNumber = layer?.baseMetal.pNumber ?? '1';
 
-  const plan = buildTestPlan({
+  const question: CouponPlanQuestion = {
     weldType: record.weldType,
     couponThickness: record.couponThickness,
     pNumber,
     impactTestingRequired: record.toughnessRequired,
     sourService: options.sourService ?? false,
     customerRequestedHardness: options.customerRequestedHardness ?? false,
-  });
-  findings.push(
-    ...reviewPlan(
-      {
-        weldType: record.weldType,
-        couponThickness: record.couponThickness,
-        pNumber,
-        impactTestingRequired: record.toughnessRequired,
-        sourService: options.sourService ?? false,
-        customerRequestedHardness: options.customerRequestedHardness ?? false,
-      },
-      plan,
-    ),
-  );
+  };
+  const plan = buildTestPlan(question);
+  findings.push(...reviewPlan(question, plan));
 
   const governing = governingTensile(record);
   const tensile = evaluateTensile(record.tests.tensile, {
@@ -92,8 +81,8 @@ export function evaluateCoupon(
 
   const hardness = hardnessRequirement({
     pNumber,
-    sourService: options.sourService ?? false,
-    customerRequested: options.customerRequestedHardness ?? false,
+    sourService: question.sourService ?? false,
+    customerRequested: question.customerRequestedHardness ?? false,
   });
   findings.push(...evaluateHardness(record.tests.hardness, hardness));
 

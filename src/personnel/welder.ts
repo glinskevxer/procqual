@@ -1,4 +1,4 @@
-import type { ProductForm, TestPosition, WeldType } from '../codes/position.js';
+import type { ProductForm, Progression, TestPosition, WeldType } from '../codes/position.js';
 import type { ProcessCode } from '../codes/process.js';
 import { blocking, deficiency, type Finding, ValidationError } from '../core/errors.js';
 import type { DocumentNumber } from '../core/identifier.js';
@@ -37,7 +37,7 @@ export interface PerformanceQualification {
   readonly weldType: WeldType;
   readonly productForm: ProductForm;
   readonly position: TestPosition;
-  readonly verticalProgression: 'uphill' | 'downhill' | 'not-applicable';
+  readonly verticalProgression: Progression;
   readonly fNumber: number;
   readonly backing: boolean;
   readonly depositThickness: Length;

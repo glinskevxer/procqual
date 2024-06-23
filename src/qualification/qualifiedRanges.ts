@@ -4,6 +4,7 @@ import {
   PRODUCTION_POSITIONS,
   positionsQualifiedBy,
   type ProductionPosition,
+  type Progression,
 } from '../codes/position.js';
 import { groupsQualifiedBy, pNumbersQualifiedBy } from '../codes/pnumber.js';
 import type { ProcessCode } from '../codes/process.js';
@@ -13,7 +14,7 @@ import { Interval } from '../core/interval.js';
 import type { Temperature } from '../core/temperature.js';
 import type { Length } from '../core/units.js';
 import type { ProcedureQualificationRecord } from './pqr.js';
-import type { Progression, WeldingVariables } from './variables.js';
+import type { WeldingVariables } from './variables.js';
 
 /**
  * What a record actually qualifies, worked out one process at a time.

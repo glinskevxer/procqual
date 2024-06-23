@@ -1,4 +1,4 @@
-import type { ProductionPosition, ProductForm, WeldType } from '../codes/position.js';
+import type { ProductForm, ProductionPosition, Progression, WeldType } from '../codes/position.js';
 import type { ProcessCode } from '../codes/process.js';
 import type { Decimal } from '../core/decimal.js';
 import { blocking, deficiency, type Finding } from '../core/errors.js';
@@ -7,7 +7,6 @@ import type { Interval } from '../core/interval.js';
 import type { PlainDate } from '../core/plainDate.js';
 import type { Temperature } from '../core/temperature.js';
 import type { Length } from '../core/units.js';
-import type { Progression } from './variables.js';
 
 /**
  * A welding procedure specification: the instruction a welder is handed.
