@@ -2,6 +2,9 @@ import { Command } from 'commander';
 
 import { ArcError } from '../core/errors.js';
 import { codesCommand } from './commands/codes.js';
+import { weldersCommand } from './commands/welders.js';
+import type { Context } from './context.js';
+import { createContext } from './context.js';
 import type { Output } from './output.js';
 
 export const VERSION = '0.1.0';
@@ -12,7 +15,7 @@ export const VERSION = '0.1.0';
  * Nothing in here writes to the process streams itself and nothing calls
  * `process.exit`, so the same tree is what the tests drive.
  */
-export function buildProgram(out: Output): Command {
+export function buildProgram(out: Output, context: Context = createContext()): Command {
   const program = new Command('arc')
     .description('weld procedure qualification and joint traceability')
     .version(VERSION)
@@ -31,6 +34,7 @@ export function buildProgram(out: Output): Command {
     });
 
   program.addCommand(codesCommand(out));
+  program.addCommand(weldersCommand(out, context));
   return program;
 }
 
@@ -38,8 +42,12 @@ export interface RunResult {
   readonly code: number;
 }
 
-export async function run(argv: readonly string[], out: Output): Promise<RunResult> {
-  const program = buildProgram(out);
+export async function run(
+  argv: readonly string[],
+  out: Output,
+  context?: Context,
+): Promise<RunResult> {
+  const program = buildProgram(out, context);
   try {
     await program.parseAsync([...argv], { from: 'user' });
     return { code: 0 };
