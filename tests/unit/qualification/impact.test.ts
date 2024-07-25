@@ -108,6 +108,14 @@ describe('grading one set', () => {
   });
 });
 
+describe('the requirement table edges', () => {
+  it('refuses a strength no row covers', () => {
+    expect(() =>
+      requiredEnergy({ ...requirement, specifiedMinimumTensileKsi: Number.NaN }, '10'),
+    ).toThrow(ValidationError);
+  });
+});
+
 describe('evaluating the sets on a coupon', () => {
   it('says nothing when every set passes', () => {
     const findings = evaluateImpacts(

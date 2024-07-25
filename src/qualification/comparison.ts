@@ -1,5 +1,4 @@
 import {
-  classOf,
   variableDefinition,
   variablesForProcess,
   type VariableClass,
@@ -151,12 +150,4 @@ export function compareBothWays(
 export function changeFor(comparison: Comparison, key: string): VariableChange | undefined {
   const definition = variableDefinition(key);
   return comparison.changes.find((change) => change.definition.key === definition.key);
-}
-
-export function classOfChange(
-  change: VariableChange,
-  impactTestingRequired: boolean,
-  process: WeldingVariables['process'],
-): VariableClass | undefined {
-  return classOf(change.definition.key, process, impactTestingRequired);
 }

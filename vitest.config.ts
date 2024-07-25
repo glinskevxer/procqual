@@ -9,6 +9,14 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       include: ['src/**/*.ts'],
       exclude: ['src/**/index.ts', 'src/cli/main.ts'],
+      // The floor is a floor, not a target. It is here to make a pull request
+      // that quietly stops covering a rule branch fail rather than pass.
+      thresholds: {
+        statements: 95,
+        branches: 90,
+        functions: 95,
+        lines: 95,
+      },
     },
   },
 });

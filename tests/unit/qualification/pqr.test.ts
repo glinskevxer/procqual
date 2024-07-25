@@ -139,6 +139,21 @@ describe('reviewing a record for transcription faults', () => {
     expect(findings.map((item) => item.code)).toContain('pqr.certified_before_welded');
   });
 
+  it('refuses a layer with no base metal thickness at all', () => {
+    const findings = reviewRecord(
+      samplePqr({
+        couponThickness: inches('0'),
+        layers: [
+          {
+            ...baseVariables(),
+            baseMetal: { ...baseVariables().baseMetal, thickness: inches('0') },
+          },
+        ],
+      }),
+    );
+    expect(findings.map((item) => item.code)).toContain('pqr.no_base_metal_thickness');
+  });
+
   it('refuses a coupon witnessed by the welder who ran it', () => {
     const findings = reviewRecord(samplePqr({ witnessedBy: 'W-118' }));
     expect(findings.map((item) => item.code)).toContain('pqr.witnessed_by_welder');
