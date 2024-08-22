@@ -16,22 +16,22 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "lint": "eslint . --ext .ts,.cjs --max-warnings 0",
+    "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run lint && npm run typecheck && npm run test",
     "arc": "tsx src/cli/main.ts"
   },
   "devDependencies": {
-    "@types/node": "20.14.11",
-    "@typescript-eslint/eslint-plugin": "7.17.0",
-    "@typescript-eslint/parser": "7.17.0",
-    "@vitest/coverage-v8": "2.0.4",
-    "eslint": "8.57.0",
+    "@eslint/js": "9.9.0",
+    "@types/node": "20.14.15",
+    "@vitest/coverage-v8": "2.0.5",
+    "eslint": "9.9.0",
     "prettier": "3.3.3",
     "tsx": "4.16.2",
     "typescript": "5.5.4",
-    "vitest": "2.0.4"
+    "typescript-eslint": "8.1.0",
+    "vitest": "2.0.5"
   },
   "bin": {
     "arc": "./dist/cli/main.js"
