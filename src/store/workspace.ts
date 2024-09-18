@@ -7,6 +7,7 @@ import { StorageError, ValidationError } from '../core/errors.js';
 import { FileJournal } from './fileJournal.js';
 import type { Journal } from './journal.js';
 import { MemoryJournal } from './journal.js';
+import { FabricationStore } from './fabricationStore.js';
 import { PersonnelStore } from './personnelStore.js';
 
 /**
@@ -43,6 +44,7 @@ export class Workspace {
   readonly journal: Journal;
   readonly clock: Clock;
   readonly personnel: PersonnelStore;
+  readonly fabrication: FabricationStore;
 
   private constructor(directory: string, marker: WorkspaceMarker, journal: Journal, clock: Clock) {
     this.directory = directory;
@@ -50,6 +52,7 @@ export class Workspace {
     this.journal = journal;
     this.clock = clock;
     this.personnel = new PersonnelStore(journal, clock);
+    this.fabrication = new FabricationStore(journal, clock);
   }
 
   static open(directory: string, options: OpenOptions = {}): Workspace {
