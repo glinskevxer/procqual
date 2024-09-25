@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { ArcError } from '../core/errors.js';
 import { codesCommand } from './commands/codes.js';
 import { jointsCommand } from './commands/joints.js';
+import { weldCommand } from './commands/weld.js';
 import { weldersCommand } from './commands/welders.js';
 import type { Context } from './context.js';
 import { createContext } from './context.js';
@@ -36,6 +37,7 @@ export function buildProgram(out: Output, context: Context = createContext()): C
 
   program.addCommand(codesCommand(out));
   program.addCommand(jointsCommand(out, context));
+  program.addCommand(weldCommand(out, context));
   program.addCommand(weldersCommand(out, context));
   routeOutput(program, out);
   return program;
