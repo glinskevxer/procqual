@@ -14,10 +14,10 @@ import {
   rebakeAccepted,
   reviewIssue,
   reviewOven,
-  type Issue,
+  type ElectrodeIssue,
 } from '../../../src/fabrication/consumables.js';
 
-const issue = (overrides: Partial<Issue> = {}): Issue => ({
+const issue = (overrides: Partial<ElectrodeIssue> = {}): ElectrodeIssue => ({
   id: 'I-1',
   consumable: 'E7018-1/8',
   lot: 'LOT-88214',

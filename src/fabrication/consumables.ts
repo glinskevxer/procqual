@@ -33,7 +33,7 @@ export interface OvenReading {
   readonly temperature: Temperature;
 }
 
-export interface Issue {
+export interface ElectrodeIssue {
   readonly id: string;
   readonly consumable: string;
   readonly lot: string;
@@ -93,14 +93,14 @@ export function hoursBetween(from: string, to: string): Decimal {
   return decimal(((end - start) / 3_600_000).toFixed(2)).normalized();
 }
 
-export function exposureSoFar(issue: Issue, now: string): Decimal {
+export function exposureSoFar(issue: ElectrodeIssue, now: string): Decimal {
   const end = issue.returnedAt ?? now;
   return issue.priorExposureHours.add(hoursBetween(issue.issuedAt, end));
 }
 
 export type IssueState = 'in-oven' | 'within-limit' | 'over-limit' | 'scrap' | 'not-controlled';
 
-export function issueState(issue: Issue, now: string): IssueState {
+export function issueState(issue: ElectrodeIssue, now: string): IssueState {
   const limit = exposureLimitHours(issue.consumable);
   if (limit === undefined) {
     return 'not-controlled';
@@ -112,7 +112,7 @@ export function issueState(issue: Issue, now: string): IssueState {
   return issue.rebakes >= MAXIMUM_REBAKES ? 'scrap' : 'over-limit';
 }
 
-export function reviewIssue(issue: Issue, now: string): readonly Finding[] {
+export function reviewIssue(issue: ElectrodeIssue, now: string): readonly Finding[] {
   const findings: Finding[] = [];
   const subject = `${issue.consumable} lot ${issue.lot}`;
   const limit = exposureLimitHours(issue.consumable);

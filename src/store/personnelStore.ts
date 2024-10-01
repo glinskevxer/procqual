@@ -1,5 +1,4 @@
 import type { ProcessCode } from '../codes/process.js';
-import type { Clock } from '../core/clock.js';
 import { ConflictError, NotFoundError } from '../core/errors.js';
 import { type DocumentNumber } from '../core/identifier.js';
 import type { PlainDate } from '../core/plainDate.js';
@@ -11,7 +10,8 @@ import {
   type Welder,
 } from '../personnel/welder.js';
 import { encodeDate, encodeDocumentNumber, encodeLength, orThrow, readers } from './codec.js';
-import type { Journal, JournalEntry } from './journal.js';
+import type { JournalEntry } from './journal.js';
+import { ProjectingStore } from './projectingStore.js';
 
 /**
  * Welders and their coupons, held as events.
@@ -83,14 +83,13 @@ const useReader = readers.record({
   on: readers.date,
 });
 
-export class PersonnelStore {
-  private readonly journal: Journal;
-  private readonly clock: Clock;
-  private cache: { at: number; projection: Projection } | undefined;
+export class PersonnelStore extends ProjectingStore<Projection> {
+  protected empty(): Projection {
+    return { welders: new Map(), qualifications: new Map(), uses: new Map() };
+  }
 
-  constructor(journal: Journal, clock: Clock) {
-    this.journal = journal;
-    this.clock = clock;
+  protected apply(projection: Projection, entry: JournalEntry): void {
+    applyEntry(projection, entry);
   }
 
   registerWelder(welder: Welder, actor: string): Welder {
@@ -198,33 +197,6 @@ export class PersonnelStore {
     const key = normaliseStencil(stencil);
     return this.entries().filter((entry) => entry.qualification.stencil === key);
   }
-
-  private write(type: PersonnelEvent, actor: string, payload: Record<string, unknown>): void {
-    this.journal.append({ type, actor, payload, at: this.clock.now().toISOString() });
-    this.cache = undefined;
-  }
-
-  private projection(): Projection {
-    const length = this.journal.length();
-    if (this.cache !== undefined && this.cache.at === length) {
-      return this.cache.projection;
-    }
-    const projection = replay(this.journal.read());
-    this.cache = { at: length, projection };
-    return projection;
-  }
-}
-
-function replay(entries: readonly JournalEntry[]): Projection {
-  const projection: Projection = {
-    welders: new Map(),
-    qualifications: new Map(),
-    uses: new Map(),
-  };
-  for (const entry of entries) {
-    applyEntry(projection, entry);
-  }
-  return projection;
 }
 
 function applyEntry(projection: Projection, entry: JournalEntry): void {

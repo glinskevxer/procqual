@@ -1,11 +1,11 @@
-import type { Clock } from '../core/clock.js';
 import { ConflictError, NotFoundError } from '../core/errors.js';
 import type { PlainDate } from '../core/plainDate.js';
 import { parseWith } from '../core/schema.js';
 import type { Joint, RadiographyLevel } from '../fabrication/joint.js';
 import type { WeldLogEntry } from '../fabrication/weldLog.js';
 import { encodeDate, encodeDocumentNumber, encodeLength, orThrow, readers } from './codec.js';
-import type { Journal, JournalEntry } from './journal.js';
+import type { JournalEntry } from './journal.js';
+import { ProjectingStore } from './projectingStore.js';
 
 /**
  * The weld map and the weld log, held as events.
@@ -76,14 +76,13 @@ interface Projection {
   voided: Map<string, string>;
 }
 
-export class FabricationStore {
-  private readonly journal: Journal;
-  private readonly clock: Clock;
-  private cache: { at: number; projection: Projection } | undefined;
+export class FabricationStore extends ProjectingStore<Projection> {
+  protected empty(): Projection {
+    return { joints: new Map(), entries: new Map(), voided: new Map() };
+  }
 
-  constructor(journal: Journal, clock: Clock) {
-    this.journal = journal;
-    this.clock = clock;
+  protected apply(projection: Projection, entry: JournalEntry): void {
+    apply(projection, entry);
   }
 
   mapJoint(joint: Joint, actor: string): void {
@@ -168,24 +167,6 @@ export class FabricationStore {
     return this.entries()
       .filter((entry) => entry.stencil === stencil)
       .map((entry) => ({ process: entry.process, on: entry.weldedOn }));
-  }
-
-  private write(type: FabricationEvent, actor: string, payload: Record<string, unknown>): void {
-    this.journal.append({ type, actor, payload, at: this.clock.now().toISOString() });
-    this.cache = undefined;
-  }
-
-  private projection(): Projection {
-    const length = this.journal.length();
-    if (this.cache !== undefined && this.cache.at === length) {
-      return this.cache.projection;
-    }
-    const projection: Projection = { joints: new Map(), entries: new Map(), voided: new Map() };
-    for (const entry of this.journal.read()) {
-      apply(projection, entry);
-    }
-    this.cache = { at: length, projection };
-    return projection;
   }
 }
 
