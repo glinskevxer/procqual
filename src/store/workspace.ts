@@ -9,6 +9,7 @@ import type { Journal } from './journal.js';
 import { MemoryJournal } from './journal.js';
 import { FabricationStore } from './fabricationStore.js';
 import { PersonnelStore } from './personnelStore.js';
+import { ProcedureStore } from './procedureStore.js';
 
 /**
  * A workspace is one directory holding one shop's records.
@@ -45,6 +46,7 @@ export class Workspace {
   readonly clock: Clock;
   readonly personnel: PersonnelStore;
   readonly fabrication: FabricationStore;
+  readonly procedures: ProcedureStore;
 
   private constructor(directory: string, marker: WorkspaceMarker, journal: Journal, clock: Clock) {
     this.directory = directory;
@@ -53,6 +55,7 @@ export class Workspace {
     this.clock = clock;
     this.personnel = new PersonnelStore(journal, clock);
     this.fabrication = new FabricationStore(journal, clock);
+    this.procedures = new ProcedureStore(journal, clock);
   }
 
   static open(directory: string, options: OpenOptions = {}): Workspace {
