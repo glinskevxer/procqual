@@ -1,0 +1,287 @@
+import { Command } from 'commander';
+
+import { ValidationError } from '../../core/errors.js';
+import { PlainDate } from '../../core/plainDate.js';
+import { pluralise } from '../../core/text.js';
+import { Length } from '../../core/units.js';
+import { judgeExamination } from '../../nde/acceptance.js';
+import type { CertificationLevel, Examination, Indication } from '../../nde/examination.js';
+import { reviewExamination } from '../../nde/examination.js';
+import { isComplete, reviewRepair, type Repair } from '../../nde/repair.js';
+import {
+  describeDemand,
+  requiredExaminations,
+  type ExaminationMethod,
+} from '../../nde/requirement.js';
+import type { Context } from '../context.js';
+import type { Output } from '../output.js';
+import { printFindings, printHeading, printTable } from '../output.js';
+
+const METHODS: readonly ExaminationMethod[] = ['RT', 'UT', 'MT', 'PT', 'VT'];
+const LEVELS: readonly CertificationLevel[] = ['I', 'II', 'III'];
+
+function readMethod(value: string): ExaminationMethod {
+  const found = METHODS.find((method) => method === value.toUpperCase());
+  if (found === undefined) {
+    throw new ValidationError('method', `not an examination method: ${value}`, { value });
+  }
+  return found;
+}
+
+function readLevel(value: string): CertificationLevel {
+  const found = LEVELS.find((level) => level === value.toUpperCase());
+  if (found === undefined) {
+    throw new ValidationError('level', `not a certification level: ${value}`, { value });
+  }
+  return found;
+}
+
+function readIndication(text: string): Indication {
+  const parts = text.split(':');
+  if (parts.length < 3) {
+    throw new ValidationError(
+      'indication',
+      `expected type:size:position, as slag:1/8:12: ${text}`,
+      { text },
+    );
+  }
+  const type = parts[0] ?? '';
+  const known = [
+    'crack',
+    'incomplete-fusion',
+    'incomplete-penetration',
+    'slag',
+    'porosity',
+    'undercut',
+    'geometric',
+  ];
+  if (!known.includes(type)) {
+    throw new ValidationError('indication', `not an indication type: ${type}`, { type });
+  }
+  return {
+    type: type as Indication['type'],
+    size: Length.parse(parts[1] ?? '0'),
+    fromDatum: Length.parse(parts[2] ?? '0'),
+  };
+}
+
+/**
+ * Examinations and repairs from the command line.
+ *
+ * `file` grades the report as it goes in rather than afterwards. A technician
+ * standing at a terminal with the film still wet is the only person who can
+ * put right an indication recorded against the wrong joint, and telling them
+ * about it a week later in a report is no use to anybody.
+ */
+export function ndeCommand(out: Output, context: Context): Command {
+  const command = new Command('nde').description('examinations and repairs');
+
+  command
+    .command('technician <name>')
+    .description('put an examination technician on the register')
+    .requiredOption('--level <roman>', 'I, II or III')
+    .requiredOption('--methods <list>', 'comma separated, as RT,UT')
+    .requiredOption('--until <date>', 'the day the certification runs out')
+    .action((name: string, options: { level: string; methods: string; until: string }) => {
+      context.workspace().examinations.registerTechnician(
+        {
+          name,
+          level: readLevel(options.level),
+          methods: options.methods.split(',').map((value) => readMethod(value.trim())),
+          certifiedUntil: PlainDate.parse(options.until),
+        },
+        context.actor,
+      );
+      out.line(`${name} registered`);
+    });
+
+  command
+    .command('file <id>')
+    .description('file an examination report')
+    .requiredOption('--joint <id>', 'the joint examined')
+    .requiredOption('--method <code>', 'RT, UT, MT, PT or VT')
+    .requiredOption('--technician <name>', 'who read it')
+    .requiredOption('--on <date>', 'the day it was taken')
+    .requiredOption('--report <number>', 'the laboratory report number')
+    .requiredOption('--coverage <length>', 'length of weld covered')
+    .option('--extent <kind>', 'full, spot or partial', 'full')
+    .option('--after-pwht', 'taken after the heat treatment', false)
+    .option('--indication <spec...>', 'type:size:position, repeatable')
+    .action(
+      (
+        id: string,
+        options: {
+          joint: string;
+          method: string;
+          technician: string;
+          on: string;
+          report: string;
+          coverage: string;
+          extent: string;
+          afterPwht: boolean;
+          indication?: string[];
+        },
+      ) => {
+        const workspace = context.workspace();
+        const technician = workspace.examinations.technician(options.technician);
+        if (technician === undefined) {
+          throw new ValidationError(
+            'technician',
+            `${options.technician} is not on the technician register`,
+            { name: options.technician },
+          );
+        }
+        const joint = workspace.fabrication.requireJoint(options.joint);
+        const examination: Examination = {
+          id,
+          joint: options.joint,
+          method: readMethod(options.method),
+          extent:
+            options.extent === 'spot' ? 'spot' : options.extent === 'partial' ? 'partial' : 'full',
+          performedOn: PlainDate.parse(options.on),
+          technician,
+          reportNumber: options.report,
+          coverage: Length.parse(options.coverage),
+          indications: (options.indication ?? []).map((text) => readIndication(text)),
+          afterHeatTreatment: options.afterPwht,
+        };
+        workspace.examinations.file(examination, context.actor);
+        const result = judgeExamination(examination, joint.thickness);
+        out.line(
+          `${id} filed against ${options.joint}: ${result.accepted ? 'accepted' : 'rejected'}`,
+        );
+        const findings = [...reviewExamination(examination), ...result.findings];
+        if (findings.length > 0) {
+          out.line('');
+          printFindings(out, findings);
+        }
+      },
+    );
+
+  command
+    .command('list')
+    .description('the examinations on file')
+    .option('--joint <id>', 'narrow to one joint')
+    .action((options: { joint?: string }) => {
+      const workspace = context.workspace();
+      const examinations = workspace.examinations.examinations(options.joint);
+      printHeading(out, 'Examinations');
+      printTable(
+        out,
+        [...examinations],
+        [
+          { header: 'report', value: (row) => row.id },
+          { header: 'joint', value: (row) => row.joint },
+          { header: 'method', value: (row) => row.method },
+          { header: 'extent', value: (row) => row.extent },
+          { header: 'taken', value: (row) => row.performedOn.toString() },
+          { header: 'by', value: (row) => `${row.technician.name} (${row.technician.level})` },
+          { header: 'indications', align: 'right', value: (row) => String(row.indications.length) },
+          {
+            header: 'verdict',
+            value: (row) => {
+              const joint = workspace.fabrication.joint(row.joint);
+              if (joint === undefined) {
+                return 'no joint';
+              }
+              return judgeExamination(row, joint.thickness).accepted ? 'accept' : 'reject';
+            },
+          },
+        ],
+        'nothing filed',
+      );
+    });
+
+  command
+    .command('required <joint>')
+    .description('what the code asks for on a joint')
+    .option('--lethal', 'the vessel is in lethal service', false)
+    .action((jointId: string, options: { lethal: boolean }) => {
+      const joint = context.workspace().fabrication.requireJoint(jointId);
+      const demands = requiredExaminations({ joint, lethalService: options.lethal, repair: false });
+      printHeading(out, `Examinations required on ${joint.id}`);
+      for (const demand of demands) {
+        out.line(describeDemand(demand));
+      }
+    });
+
+  command
+    .command('repair <id>')
+    .description('raise a repair against a rejected examination')
+    .requiredOption('--joint <id>', 'the joint')
+    .requiredOption('--from <report>', 'the examination that rejected it')
+    .requiredOption('--defect <type>', 'what was found')
+    .requiredOption('--length <length>', 'length of the excavation')
+    .requiredOption('--depth <length>', 'depth of the excavation')
+    .requiredOption('--on <date>', 'the day it was gouged out')
+    .requiredOption('--welder <stencil>', 'who is rewelding it')
+    .option('--attempt <number>', 'which go this is at the same place', '1')
+    .option('--approval <reference>', 'engineering approval, where one is needed')
+    .action(
+      (
+        id: string,
+        options: {
+          joint: string;
+          from: string;
+          defect: string;
+          length: string;
+          depth: string;
+          on: string;
+          welder: string;
+          attempt: string;
+          approval?: string;
+        },
+      ) => {
+        const workspace = context.workspace();
+        const joint = workspace.fabrication.requireJoint(options.joint);
+        const examination = workspace.examinations.requireExamination(options.from);
+        const repair: Repair = {
+          id,
+          joint: options.joint,
+          raisedBy: options.from,
+          method: examination.method,
+          defect: readIndication(`${options.defect}:0.001:0`).type,
+          attempt: Number(options.attempt),
+          excavationLength: Length.parse(options.length),
+          excavationDepth: Length.parse(options.depth),
+          jointThickness: joint.thickness,
+          excavatedOn: PlainDate.parse(options.on),
+          rewelderStencil: options.welder,
+          ...(options.approval === undefined ? {} : { engineeringApproval: options.approval }),
+        };
+        workspace.examinations.raiseRepair(repair, context.actor);
+        out.line(`${id} raised against ${options.joint}`);
+        printFindings(out, reviewRepair(repair, undefined));
+      },
+    );
+
+  command
+    .command('repairs')
+    .description('the repairs raised, open ones first')
+    .option('--joint <id>', 'narrow to one joint')
+    .action((options: { joint?: string }) => {
+      const repairs = context.workspace().examinations.repairs(options.joint);
+      printHeading(out, 'Repairs');
+      printTable(
+        out,
+        [...repairs],
+        [
+          { header: 'repair', value: (row) => row.id },
+          { header: 'joint', value: (row) => row.joint },
+          { header: 'defect', value: (row) => row.defect },
+          { header: 'attempt', align: 'right', value: (row) => String(row.attempt) },
+          { header: 'excavated', value: (row) => row.excavatedOn.toString() },
+          { header: 'rewelded', value: (row) => row.reweldedOn?.toString() ?? '' },
+          { header: 'state', value: (row) => (isComplete(row) ? 'closed' : 'open') },
+        ],
+        'no repairs raised',
+      );
+      const open = repairs.filter((item) => !isComplete(item)).length;
+      if (open > 0) {
+        out.line('');
+        out.line(`${pluralise(open, 'repair')} still open`);
+      }
+    });
+
+  return command;
+}

@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { ArcError } from '../core/errors.js';
 import { codesCommand } from './commands/codes.js';
 import { jointsCommand } from './commands/joints.js';
+import { ndeCommand } from './commands/nde.js';
 import { pqrCommand } from './commands/pqr.js';
 import { proceduresCommand } from './commands/procedures.js';
 import { weldCommand } from './commands/weld.js';
@@ -39,6 +40,7 @@ export function buildProgram(out: Output, context: Context = createContext()): C
 
   program.addCommand(codesCommand(out));
   program.addCommand(jointsCommand(out, context));
+  program.addCommand(ndeCommand(out, context));
   program.addCommand(pqrCommand(out, context));
   program.addCommand(proceduresCommand(out, context));
   program.addCommand(weldCommand(out, context));
