@@ -5,36 +5,19 @@ import { PlainDate } from '../../core/plainDate.js';
 import { pluralise } from '../../core/text.js';
 import { Length } from '../../core/units.js';
 import { judgeExamination } from '../../nde/acceptance.js';
-import type { CertificationLevel, Examination, Indication } from '../../nde/examination.js';
+import type { Examination, Indication } from '../../nde/examination.js';
 import { reviewExamination } from '../../nde/examination.js';
 import { isComplete, reviewRepair, type Repair } from '../../nde/repair.js';
-import {
-  describeDemand,
-  requiredExaminations,
-  type ExaminationMethod,
-} from '../../nde/requirement.js';
+import { describeDemand, requiredExaminations } from '../../nde/requirement.js';
 import type { Context } from '../context.js';
+import {
+  parseCertificationLevel,
+  parseExaminationMethod,
+  parseExtent,
+  parseIndicationType,
+} from '../parse.js';
 import type { Output } from '../output.js';
 import { printFindings, printHeading, printTable } from '../output.js';
-
-const METHODS: readonly ExaminationMethod[] = ['RT', 'UT', 'MT', 'PT', 'VT'];
-const LEVELS: readonly CertificationLevel[] = ['I', 'II', 'III'];
-
-function readMethod(value: string): ExaminationMethod {
-  const found = METHODS.find((method) => method === value.toUpperCase());
-  if (found === undefined) {
-    throw new ValidationError('method', `not an examination method: ${value}`, { value });
-  }
-  return found;
-}
-
-function readLevel(value: string): CertificationLevel {
-  const found = LEVELS.find((level) => level === value.toUpperCase());
-  if (found === undefined) {
-    throw new ValidationError('level', `not a certification level: ${value}`, { value });
-  }
-  return found;
-}
 
 function readIndication(text: string): Indication {
   const parts = text.split(':');
@@ -45,21 +28,8 @@ function readIndication(text: string): Indication {
       { text },
     );
   }
-  const type = parts[0] ?? '';
-  const known = [
-    'crack',
-    'incomplete-fusion',
-    'incomplete-penetration',
-    'slag',
-    'porosity',
-    'undercut',
-    'geometric',
-  ];
-  if (!known.includes(type)) {
-    throw new ValidationError('indication', `not an indication type: ${type}`, { type });
-  }
   return {
-    type: type as Indication['type'],
+    type: parseIndicationType(parts[0] ?? ''),
     size: Length.parse(parts[1] ?? '0'),
     fromDatum: Length.parse(parts[2] ?? '0'),
   };
@@ -86,8 +56,8 @@ export function ndeCommand(out: Output, context: Context): Command {
       context.workspace().examinations.registerTechnician(
         {
           name,
-          level: readLevel(options.level),
-          methods: options.methods.split(',').map((value) => readMethod(value.trim())),
+          level: parseCertificationLevel(options.level),
+          methods: options.methods.split(',').map((value) => parseExaminationMethod(value)),
           certifiedUntil: PlainDate.parse(options.until),
         },
         context.actor,
@@ -135,9 +105,8 @@ export function ndeCommand(out: Output, context: Context): Command {
         const examination: Examination = {
           id,
           joint: options.joint,
-          method: readMethod(options.method),
-          extent:
-            options.extent === 'spot' ? 'spot' : options.extent === 'partial' ? 'partial' : 'full',
+          method: parseExaminationMethod(options.method),
+          extent: parseExtent(options.extent),
           performedOn: PlainDate.parse(options.on),
           technician,
           reportNumber: options.report,

@@ -1,7 +1,6 @@
 import { Command } from 'commander';
 
 import { parseProcess } from '../../codes/process.js';
-import { ValidationError } from '../../core/errors.js';
 import { DocumentNumber } from '../../core/identifier.js';
 import { PlainDate } from '../../core/plainDate.js';
 import { pluralise } from '../../core/text.js';
@@ -12,22 +11,12 @@ import {
   processesOnJoint,
   reviewEntry,
   weldersOnJoint,
-  type LogRole,
   type WeldLogEntry,
 } from '../../fabrication/weldLog.js';
 import type { Context } from '../context.js';
+import { parseLogRole } from '../parse.js';
 import type { Output } from '../output.js';
 import { printFindings, printHeading, printTable } from '../output.js';
-
-const ROLES: readonly LogRole[] = ['root', 'fill', 'cap', 'repair', 'tack'];
-
-function readRole(value: string): LogRole {
-  const found = ROLES.find((role) => role === value);
-  if (found === undefined) {
-    throw new ValidationError('role', `not a weld log role: ${value}`, { value, known: ROLES });
-  }
-  return found;
-}
 
 interface LogOptions {
   joint: string;
@@ -74,7 +63,7 @@ export function weldCommand(out: Output, context: Context): Command {
         process: parseProcess(options.process),
         procedure: DocumentNumber.parse(options.procedure),
         weldedOn: PlainDate.parse(options.on),
-        role: readRole(options.role),
+        role: parseLogRole(options.role),
         consumable: options.consumable,
         consumableLot: options.lot,
         depositThickness: Length.parse(options.deposit),

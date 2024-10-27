@@ -1,21 +1,25 @@
 import { Command } from 'commander';
 
-import { ValidationError } from '../../core/errors.js';
 import { DocumentNumber } from '../../core/identifier.js';
 import { Length } from '../../core/units.js';
 import { keyValues, pluralise } from '../../core/text.js';
 import {
   describeJoint,
-  isJointType,
   jointEfficiency,
   jointTypeFacts,
   parseJointCategory,
   reviewJoint,
   type Joint,
-  type RadiographyLevel,
 } from '../../fabrication/joint.js';
 import { describeDemand, requiredExaminations } from '../../nde/requirement.js';
 import type { Context } from '../context.js';
+import {
+  parseJointType,
+  parseProductForm,
+  parseProductionPosition,
+  parseRadiographyLevel,
+  parseWeldType,
+} from '../parse.js';
 import type { Output } from '../output.js';
 import { printFindings, printHeading, printTable } from '../output.js';
 
@@ -36,28 +40,6 @@ interface MapOptions {
   heatRight: string;
   procedure: string;
   radiography: string;
-}
-
-function readLevel(value: string): RadiographyLevel {
-  if (value !== 'full' && value !== 'spot' && value !== 'none') {
-    throw new ValidationError('radiography', `not an examination level: ${value}`, { value });
-  }
-  return value;
-}
-
-function readType(value: string): Joint['type'] {
-  const parsed = Number(value);
-  if (!isJointType(parsed)) {
-    throw new ValidationError('type', `not a joint construction type: ${value}`, { value });
-  }
-  return parsed;
-}
-
-function readPosition(value: string): Joint['position'] {
-  if (value !== 'flat' && value !== 'horizontal' && value !== 'vertical' && value !== 'overhead') {
-    throw new ValidationError('position', `not a production position: ${value}`, { value });
-  }
-  return value;
 }
 
 /**
@@ -96,10 +78,10 @@ export function jointsCommand(out: Output, context: Context): Command {
         vessel: options.vessel,
         description: options.description,
         category: parseJointCategory(options.category),
-        type: readType(options.type),
-        weldType: options.weld === 'fillet' ? 'fillet' : 'groove',
-        productForm: options.form === 'pipe' ? 'pipe' : 'plate',
-        position: readPosition(options.position),
+        type: parseJointType(options.type),
+        weldType: parseWeldType(options.weld),
+        productForm: parseProductForm(options.form),
+        position: parseProductionPosition(options.position),
         thickness: Length.parse(options.thickness),
         lengthOfWeld: Length.parse(options.length),
         baseMetalLeft: options.left,
@@ -107,7 +89,7 @@ export function jointsCommand(out: Output, context: Context): Command {
         heatLeft: options.heatLeft,
         heatRight: options.heatRight,
         procedure: DocumentNumber.parse(options.procedure),
-        radiography: readLevel(options.radiography),
+        radiography: parseRadiographyLevel(options.radiography),
         ...(options.diameter === undefined
           ? {}
           : { outsideDiameter: Length.parse(options.diameter) }),
@@ -199,7 +181,7 @@ export function jointsCommand(out: Output, context: Context): Command {
       const workspace = context.workspace();
       workspace.fabrication.changeExaminationLevel(
         id,
-        readLevel(level),
+        parseRadiographyLevel(level),
         options.reason,
         context.actor,
       );
