@@ -6,6 +6,7 @@ import { jointsCommand } from './commands/joints.js';
 import { ndeCommand } from './commands/nde.js';
 import { pqrCommand } from './commands/pqr.js';
 import { proceduresCommand } from './commands/procedures.js';
+import { reportCommand } from './commands/report.js';
 import { weldCommand } from './commands/weld.js';
 import { weldersCommand } from './commands/welders.js';
 import type { Context } from './context.js';
@@ -43,6 +44,7 @@ export function buildProgram(out: Output, context: Context = createContext()): C
   program.addCommand(ndeCommand(out, context));
   program.addCommand(pqrCommand(out, context));
   program.addCommand(proceduresCommand(out, context));
+  program.addCommand(reportCommand(out, context));
   program.addCommand(weldCommand(out, context));
   program.addCommand(weldersCommand(out, context));
   routeOutput(program, out);

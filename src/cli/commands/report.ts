@@ -1,0 +1,108 @@
+import { Command } from 'commander';
+
+import { heading, pluralise } from '../../core/text.js';
+import { assemblePackage, outstandingSections } from '../../reporting/dataPackage.js';
+import { describeStatus, outstandingJoints, statusesFor } from '../../reporting/jointStatus.js';
+import type { Context } from '../context.js';
+import type { Output } from '../output.js';
+import { printFindings, printHeading, printTable } from '../output.js';
+
+/**
+ * The reports, which is what most people who use this system ever run.
+ *
+ * `package` is meant to be run every week from the day the first plate is cut,
+ * not on the day the inspector is booked. Everything it finds is cheaper to
+ * fix the week it happens.
+ */
+export function reportCommand(out: Output, context: Context): Command {
+  const command = new Command('report').description('the reports');
+
+  command
+    .command('joints <vessel>')
+    .description('where every joint on a vessel has got to')
+    .option('--outstanding', 'only the ones that are not finished', false)
+    .action((vessel: string, options: { outstanding: boolean }) => {
+      const workspace = context.workspace();
+      const statuses = statusesFor(workspace.fabrication.joints(vessel), {
+        entries: workspace.fabrication.entries(),
+        examinations: workspace.examinations.examinations(),
+        repairs: workspace.examinations.repairs(),
+      });
+      const shown = options.outstanding ? outstandingJoints(statuses) : statuses;
+      printHeading(out, `Joint status for ${vessel}`);
+      printTable(
+        out,
+        [...shown],
+        [
+          { header: 'joint', value: (row) => row.joint.id },
+          { header: 'stage', value: (row) => row.stage },
+          {
+            header: 'deposit',
+            align: 'right',
+            value: (row) => row.depositLaid?.toFraction() ?? '',
+          },
+          { header: 'welders', value: (row) => row.welders.join(', ') },
+          { header: 'reports', align: 'right', value: (row) => String(row.examinations.length) },
+          { header: 'outstanding', value: (row) => row.methodsOutstanding.join(', ') },
+          {
+            header: 'open repairs',
+            align: 'right',
+            value: (row) => String(row.openRepairs.length),
+          },
+        ],
+        options.outstanding ? 'every joint is finished' : 'nothing on the weld map',
+      );
+    });
+
+  command
+    .command('joint <id>')
+    .description('one joint in detail, with everything still to clear')
+    .action((id: string) => {
+      const workspace = context.workspace();
+      const joint = workspace.fabrication.requireJoint(id);
+      const status = statusesFor([joint], {
+        entries: workspace.fabrication.entries(),
+        examinations: workspace.examinations.examinations(),
+        repairs: workspace.examinations.repairs(),
+      })[0];
+      if (status === undefined) {
+        return;
+      }
+      printHeading(out, describeStatus(status));
+      printFindings(out, status.findings);
+    });
+
+  command
+    .command('package <vessel>')
+    .description('whether the paperwork is complete enough to sign for')
+    .option('--lethal', 'the vessel is in lethal service', false)
+    .action((vessel: string, options: { lethal: boolean }) => {
+      const workspace = context.workspace();
+      const report = assemblePackage({
+        vessel,
+        joints: workspace.fabrication.joints(),
+        entries: workspace.fabrication.entries(),
+        examinations: workspace.examinations.examinations(),
+        repairs: workspace.examinations.repairs(),
+        charts: [],
+        heats: [],
+        procedures: workspace.procedures.procedures(),
+        records: workspace.procedures.records(),
+        lethalService: options.lethal,
+      });
+      printHeading(out, `Data package for ${vessel}`);
+      for (const item of report.sections) {
+        out.line('');
+        out.line(heading(`${item.name} - ${item.complete ? 'complete' : 'outstanding'}`, '-'));
+        printFindings(out, item.findings);
+      }
+      out.line('');
+      out.line(
+        report.complete
+          ? 'the package is complete'
+          : `${pluralise(report.outstanding, 'item')} outstanding across ${pluralise(outstandingSections(report).length, 'section')}`,
+      );
+    });
+
+  return command;
+}
