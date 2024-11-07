@@ -9,6 +9,7 @@ import type { Journal } from './journal.js';
 import { MemoryJournal } from './journal.js';
 import { ExaminationStore } from './examinationStore.js';
 import { FabricationStore } from './fabricationStore.js';
+import { MaterialStore } from './materialStore.js';
 import { PersonnelStore } from './personnelStore.js';
 import { ProcedureStore } from './procedureStore.js';
 
@@ -49,6 +50,7 @@ export class Workspace {
   readonly fabrication: FabricationStore;
   readonly procedures: ProcedureStore;
   readonly examinations: ExaminationStore;
+  readonly materials: MaterialStore;
 
   private constructor(directory: string, marker: WorkspaceMarker, journal: Journal, clock: Clock) {
     this.directory = directory;
@@ -59,6 +61,7 @@ export class Workspace {
     this.fabrication = new FabricationStore(journal, clock);
     this.procedures = new ProcedureStore(journal, clock);
     this.examinations = new ExaminationStore(journal, clock);
+    this.materials = new MaterialStore(journal, clock);
   }
 
   static open(directory: string, options: OpenOptions = {}): Workspace {
