@@ -16,10 +16,10 @@ export interface Context {
 
 export interface ContextOptions {
   readonly path?: string | undefined;
-  readonly create?: boolean;
-  readonly clock?: Clock;
-  readonly actor?: string;
-  readonly environment?: NodeJS.ProcessEnv;
+  readonly create?: boolean | undefined;
+  readonly clock?: Clock | undefined;
+  readonly actor?: string | undefined;
+  readonly environment?: NodeJS.ProcessEnv | undefined;
 }
 
 export function createContext(options: ContextOptions = {}): Context {

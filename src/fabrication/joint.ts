@@ -116,7 +116,7 @@ export interface Joint {
   readonly position: ProductionPosition;
   readonly thickness: Length;
   readonly lengthOfWeld: Length;
-  readonly outsideDiameter?: Length;
+  readonly outsideDiameter?: Length | undefined;
   readonly baseMetalLeft: string;
   readonly baseMetalRight: string;
   readonly heatLeft: string;

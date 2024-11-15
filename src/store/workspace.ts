@@ -35,10 +35,10 @@ export interface WorkspaceMarker {
 }
 
 export interface OpenOptions {
-  readonly clock?: Clock;
-  readonly create?: boolean;
-  readonly shop?: string;
-  readonly tolerateTornTail?: boolean;
+  readonly clock?: Clock | undefined;
+  readonly create?: boolean | undefined;
+  readonly shop?: string | undefined;
+  readonly tolerateTornTail?: boolean | undefined;
 }
 
 export class Workspace {

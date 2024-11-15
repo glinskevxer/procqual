@@ -216,7 +216,7 @@ export function ndeCommand(out: Output, context: Context): Command {
           jointThickness: joint.thickness,
           excavatedOn: PlainDate.parse(options.on),
           rewelderStencil: options.welder,
-          ...(options.approval === undefined ? {} : { engineeringApproval: options.approval }),
+          engineeringApproval: options.approval,
         };
         workspace.examinations.raiseRepair(repair, context.actor);
         out.line(`${id} raised against ${options.joint}`);

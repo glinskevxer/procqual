@@ -24,7 +24,7 @@ export interface Welder {
   readonly stencil: string;
   readonly name: string;
   readonly employedFrom: PlainDate;
-  readonly employedUntil?: PlainDate;
+  readonly employedUntil?: PlainDate | undefined;
 }
 
 export type PerformanceTestMethod = 'bend' | 'radiograph' | 'macro';
@@ -42,13 +42,13 @@ export interface PerformanceQualification {
   readonly backing: boolean;
   readonly depositThickness: Length;
   readonly layers: number;
-  readonly outsideDiameter?: Length;
+  readonly outsideDiameter?: Length | undefined;
   readonly testMethod: PerformanceTestMethod;
   readonly passed: boolean;
   readonly witnessedBy: string;
   /** Withdrawn by the quality department, separate from lapsing. */
-  readonly revokedOn?: PlainDate;
-  readonly revokedReason?: string;
+  readonly revokedOn?: PlainDate | undefined;
+  readonly revokedReason?: string | undefined;
 }
 
 export function isStencil(value: string): boolean {

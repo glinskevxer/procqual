@@ -31,7 +31,7 @@ export interface VariableChange {
 export interface ComparisonOptions {
   readonly impactTestingRequired: boolean;
   /** Variables the caller has already handled by a range rule rather than equality. */
-  readonly ignore?: readonly string[];
+  readonly ignore?: readonly string[] | undefined;
 }
 
 export interface Comparison {

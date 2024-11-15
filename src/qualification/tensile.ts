@@ -32,7 +32,7 @@ export interface TensileRequirement {
    * For a joint between two different base metals, the lower of the two
    * minimums governs, and the caller has to say which it used.
    */
-  readonly governingMetal?: string;
+  readonly governingMetal?: string | undefined;
 }
 
 export interface TensileResult {

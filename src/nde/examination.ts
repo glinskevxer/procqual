@@ -34,8 +34,8 @@ export interface Indication {
   readonly size: Length;
   /** Distance along the weld from the datum, for the sketch. */
   readonly fromDatum: Length;
-  readonly throughWallDepth?: Length;
-  readonly note?: string;
+  readonly throughWallDepth?: Length | undefined;
+  readonly note?: string | undefined;
 }
 
 export interface Technician {

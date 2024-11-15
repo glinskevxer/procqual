@@ -83,7 +83,7 @@ export interface ToughnessQuestion {
    * Heat treatment was applied where the construction code did not require it,
    * which earns a thirty degree allowance on carbon and low alloy steel.
    */
-  readonly heatTreatedWhenNotRequired?: boolean;
+  readonly heatTreatedWhenNotRequired?: boolean | undefined;
 }
 
 export interface ToughnessAssessment {

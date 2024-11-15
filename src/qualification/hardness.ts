@@ -23,7 +23,7 @@ export interface HardnessReading {
   readonly zone: SurveyZone;
   readonly value: Decimal;
   /** Distance from the fusion line in millimetres, for the traverse plot. */
-  readonly offsetMillimetres?: Decimal;
+  readonly offsetMillimetres?: Decimal | undefined;
 }
 
 export interface HardnessSurvey {

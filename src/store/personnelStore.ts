@@ -219,11 +219,10 @@ function applyEntry(projection: Projection, entry: JournalEntry): void {
     }
     case 'wpq.recorded': {
       const read = orThrow('a qualification', parseWith(qualificationReader, entry.payload));
-      const { couponPNumber, position, outsideDiameter, ...rest } = read;
+      const { couponPNumber, position, ...rest } = read;
       const qualification: PerformanceQualification = {
         ...rest,
         position: position as PerformanceQualification['position'],
-        ...(outsideDiameter === undefined ? {} : { outsideDiameter }),
       };
       projection.qualifications.set(qualification.number.key(), {
         qualification,

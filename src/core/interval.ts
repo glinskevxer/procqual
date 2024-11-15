@@ -11,13 +11,22 @@ import { ValidationError } from './errors.js';
  * range covers another rather than whether a single number sits inside one.
  */
 
+/**
+ * What an interval needs of its element type.
+ *
+ * The `toString` is not decoration. An interval prints itself into findings
+ * and into the journal, and a bound that stringifies as `[object Object]`
+ * turns a range in a report into nothing at all. Requiring it here means the
+ * compiler refuses an element type that cannot say what it is.
+ */
 export interface Comparable<T> {
   compare(other: T): -1 | 0 | 1;
+  toString(): string;
 }
 
 export interface IntervalOptions {
-  readonly lowerInclusive?: boolean;
-  readonly upperInclusive?: boolean;
+  readonly lowerInclusive?: boolean | undefined;
+  readonly upperInclusive?: boolean | undefined;
 }
 
 export class Interval<T extends Comparable<T>> {

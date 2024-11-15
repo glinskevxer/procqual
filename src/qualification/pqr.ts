@@ -46,14 +46,14 @@ export interface ProcedureQualificationRecord {
   readonly heatLeft: string;
   readonly heatRight: string;
   readonly couponThickness: Length;
-  readonly outsideDiameter?: Length;
+  readonly outsideDiameter?: Length | undefined;
   /** One entry per process used on the coupon, in the order they were run. */
   readonly layers: readonly WeldingVariables[];
   /** The construction code called for notch toughness on the coupon. */
   readonly toughnessRequired: boolean;
   readonly tests: CouponTests;
-  readonly witnessedBy?: string;
-  readonly certifiedOn?: PlainDate;
+  readonly witnessedBy?: string | undefined;
+  readonly certifiedOn?: PlainDate | undefined;
 }
 
 export function processesUsed(record: ProcedureQualificationRecord): readonly ProcessCode[] {

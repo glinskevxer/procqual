@@ -11,16 +11,16 @@ export type Alignment = 'left' | 'right';
 
 export interface Column<T> {
   readonly header: string;
-  readonly align?: Alignment;
-  readonly width?: number;
+  readonly align?: Alignment | undefined;
+  readonly width?: number | undefined;
   value(row: T): string;
 }
 
 export interface TableOptions {
   /** Two spaces reads better than a pipe on a narrow printer. */
-  readonly gap?: string;
-  readonly rule?: boolean;
-  readonly emptyMessage?: string;
+  readonly gap?: string | undefined;
+  readonly rule?: boolean | undefined;
+  readonly emptyMessage?: string | undefined;
 }
 
 export function renderTable<T>(

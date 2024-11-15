@@ -67,7 +67,7 @@ export function jointRequirement(
     pNumber: baseMetal(joint.baseMetalLeft).pNumber,
     depositThickness: joint.thickness,
     backing: joint.type === 2,
-    ...(joint.outsideDiameter === undefined ? {} : { outsideDiameter: joint.outsideDiameter }),
+    outsideDiameter: joint.outsideDiameter,
   };
 }
 

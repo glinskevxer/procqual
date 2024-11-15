@@ -174,12 +174,7 @@ function apply(projection: Projection, entry: JournalEntry): void {
   switch (entry.type) {
     case 'joint.mapped': {
       const read = orThrow('a joint', parseWith(jointReader, entry.payload));
-      const { type, outsideDiameter, ...rest } = read;
-      projection.joints.set(read.id, {
-        ...rest,
-        type: type as Joint['type'],
-        ...(outsideDiameter === undefined ? {} : { outsideDiameter }),
-      });
+      projection.joints.set(read.id, { ...read, type: read.type as Joint['type'] });
       break;
     }
     case 'joint.examination_level_changed': {

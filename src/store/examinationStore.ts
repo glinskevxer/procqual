@@ -245,24 +245,13 @@ function apply(projection: Projection, entry: JournalEntry): void {
       const read = orThrow('an examination', parseWith(examinationReader, entry.payload));
       projection.examinations.set(read.id, {
         ...read,
-        indications: read.indications.map((item) => {
-          const { throughWallDepth, note, ...rest } = item;
-          return {
-            ...rest,
-            ...(throughWallDepth === undefined ? {} : { throughWallDepth }),
-            ...(note === undefined ? {} : { note }),
-          };
-        }),
+        indications: read.indications,
       });
       break;
     }
     case 'repair.raised': {
       const read = orThrow('a repair', parseWith(repairReader, entry.payload));
-      const { engineeringApproval, ...rest } = read;
-      projection.repairs.set(read.id, {
-        ...rest,
-        ...(engineeringApproval === undefined ? {} : { engineeringApproval }),
-      });
+      projection.repairs.set(read.id, read);
       break;
     }
     case 'repair.rewelded': {

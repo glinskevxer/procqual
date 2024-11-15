@@ -41,7 +41,7 @@ export interface MaterialHeat {
   readonly normalised: boolean;
   readonly chemistry: DepositAnalysis;
   readonly mechanical: MechanicalResults;
-  readonly impacts?: CertifiedImpacts;
+  readonly impacts?: CertifiedImpacts | undefined;
 }
 
 /** Chemistry limits the shop enforces on top of the material specification. */

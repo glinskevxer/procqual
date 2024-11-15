@@ -23,7 +23,7 @@ export interface ImpactSpecimen {
   readonly id: string;
   readonly energyFootPounds: Decimal;
   readonly lateralExpansion: Length;
-  readonly shearPercent?: number;
+  readonly shearPercent?: number | undefined;
 }
 
 export interface ImpactSet {

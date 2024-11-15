@@ -85,9 +85,9 @@ export interface Finding {
   readonly code: string;
   readonly message: string;
   /** The code clause this call rests on, for example `QW-451.1`. */
-  readonly clause?: string;
-  readonly subject?: string;
-  readonly details?: Readonly<Record<string, unknown>>;
+  readonly clause?: string | undefined;
+  readonly subject?: string | undefined;
+  readonly details?: Readonly<Record<string, unknown>> | undefined;
 }
 
 export function finding(

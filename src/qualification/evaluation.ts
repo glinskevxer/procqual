@@ -36,9 +36,9 @@ export interface CouponVerdict {
 }
 
 export interface EvaluationOptions {
-  readonly sourService?: boolean;
-  readonly customerRequestedHardness?: boolean;
-  readonly lateralExpansionRequired?: boolean;
+  readonly sourService?: boolean | undefined;
+  readonly customerRequestedHardness?: boolean | undefined;
+  readonly lateralExpansionRequired?: boolean | undefined;
 }
 
 export function evaluateCoupon(

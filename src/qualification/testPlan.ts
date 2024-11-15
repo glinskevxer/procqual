@@ -25,8 +25,8 @@ export interface CouponPlanQuestion {
   readonly couponThickness: Length;
   readonly pNumber: string;
   readonly impactTestingRequired: boolean;
-  readonly sourService?: boolean;
-  readonly customerRequestedHardness?: boolean;
+  readonly sourService?: boolean | undefined;
+  readonly customerRequestedHardness?: boolean | undefined;
 }
 
 export interface TestPlan {

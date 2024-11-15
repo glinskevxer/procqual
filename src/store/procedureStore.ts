@@ -218,13 +218,7 @@ function apply(projection: Projection, entry: JournalEntry): void {
   switch (entry.type) {
     case 'pqr.recorded': {
       const read = orThrow('a qualification record', parseWith(recordReader, entry.payload));
-      const { outsideDiameter, witnessedBy, certifiedOn, ...rest } = read;
-      projection.records.set(read.number.key(), {
-        ...rest,
-        ...(outsideDiameter === undefined ? {} : { outsideDiameter }),
-        ...(witnessedBy === undefined ? {} : { witnessedBy }),
-        ...(certifiedOn === undefined ? {} : { certifiedOn }),
-      });
+      projection.records.set(read.number.key(), read);
       break;
     }
     case 'pqr.certified': {
@@ -249,11 +243,7 @@ function apply(projection: Projection, entry: JournalEntry): void {
     }
     case 'wps.issued': {
       const read = orThrow('a procedure', parseWith(procedureReader, entry.payload));
-      const { withdrawnOn, ...rest } = read;
-      projection.procedures.set(revisionKey(read.number), {
-        ...rest,
-        ...(withdrawnOn === undefined ? {} : { withdrawnOn }),
-      });
+      projection.procedures.set(revisionKey(read.number), read);
       break;
     }
     case 'wps.withdrawn': {

@@ -27,7 +27,7 @@ export interface ProcedureClaim {
   readonly progression: Progression;
   readonly preheatMinimum: Temperature;
   readonly interpassMaximum: Temperature;
-  readonly heatInputCap?: Decimal;
+  readonly heatInputCap?: Decimal | undefined;
 }
 
 export type PwhtClaim = 'none' | 'below-transformation' | 'above-transformation';
@@ -47,7 +47,7 @@ export interface WeldingProcedureSpecification {
   readonly pwht: PwhtClaim;
   /** The procedure is offered for work that needs notch toughness. */
   readonly toughnessQualified: boolean;
-  readonly withdrawnOn?: PlainDate;
+  readonly withdrawnOn?: PlainDate | undefined;
 }
 
 export function processesOf(wps: WeldingProcedureSpecification): readonly ProcessCode[] {

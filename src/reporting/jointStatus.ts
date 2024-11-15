@@ -41,9 +41,9 @@ export interface JointStatusInput {
   readonly entries: readonly WeldLogEntry[];
   readonly examinations: readonly Examination[];
   readonly repairs: readonly Repair[];
-  readonly lethalService?: boolean;
+  readonly lethalService?: boolean | undefined;
   /** The joint has been through its post weld heat treatment. */
-  readonly heatTreatedOn?: PlainDate;
+  readonly heatTreatedOn?: PlainDate | undefined;
 }
 
 export function statusOf(input: JointStatusInput): JointStatus {

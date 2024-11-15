@@ -114,7 +114,7 @@ export interface JointRequirement {
   readonly pNumber: string;
   readonly depositThickness: Length;
   readonly backing: boolean;
-  readonly outsideDiameter?: Length;
+  readonly outsideDiameter?: Length | undefined;
 }
 
 export interface ScopeMiss {

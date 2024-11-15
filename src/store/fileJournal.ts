@@ -37,7 +37,7 @@ import {
 
 export interface FileJournalOptions {
   /** Discard a trailing line that does not parse rather than refusing to open. */
-  readonly tolerateTornTail?: boolean;
+  readonly tolerateTornTail?: boolean | undefined;
 }
 
 export class FileJournal implements Journal {

@@ -180,14 +180,11 @@ function apply(projection: Projection, entry: JournalEntry): void {
   switch (entry.type) {
     case 'heat.certified': {
       const read = orThrow('a mill certificate', parseWith(heatReader, entry.payload));
-      const { impacts, chemistry, ...rest } = read;
-      const trimmed = Object.fromEntries(
-        Object.entries(chemistry).filter(([, value]) => value !== undefined),
-      );
       projection.heats.set(read.heatNumber, {
-        ...rest,
-        chemistry: trimmed,
-        ...(impacts === undefined ? {} : { impacts }),
+        ...read,
+        chemistry: Object.fromEntries(
+          Object.entries(read.chemistry).filter(([, value]) => value !== undefined),
+        ),
       });
       break;
     }

@@ -34,7 +34,7 @@ export interface PackageInput {
   readonly heats: readonly MaterialHeat[];
   readonly procedures: readonly WeldingProcedureSpecification[];
   readonly records: readonly ProcedureQualificationRecord[];
-  readonly lethalService?: boolean;
+  readonly lethalService?: boolean | undefined;
 }
 
 export interface PackageSection {
@@ -57,7 +57,7 @@ export function assemblePackage(input: PackageInput): PackageReport {
     entries: input.entries,
     examinations: input.examinations,
     repairs: input.repairs,
-    ...(input.lethalService === undefined ? {} : { lethalService: input.lethalService }),
+    lethalService: input.lethalService ?? false,
   });
 
   const sections: PackageSection[] = [

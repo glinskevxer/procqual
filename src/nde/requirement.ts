@@ -38,7 +38,7 @@ export interface ExaminationQuestion {
   /** The weld was gouged out and rewelded, which is examined again either way. */
   readonly repair: boolean;
   /** Ultrasonic stands in for radiography where the geometry defeats a film. */
-  readonly ultrasonicInPlaceOfRadiography?: boolean;
+  readonly ultrasonicInPlaceOfRadiography?: boolean | undefined;
 }
 
 /** Above this thickness the family is fully radiographed whatever the plan says. */

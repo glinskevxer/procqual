@@ -33,9 +33,9 @@ export interface Repair {
   readonly jointThickness: Length;
   readonly excavatedOn: PlainDate;
   readonly rewelderStencil: string;
-  readonly reweldedOn?: PlainDate;
-  readonly reExaminedBy?: string;
-  readonly engineeringApproval?: string;
+  readonly reweldedOn?: PlainDate | undefined;
+  readonly reExaminedBy?: string | undefined;
+  readonly engineeringApproval?: string | undefined;
 }
 
 export const APPROVAL_NEEDED_FROM_ATTEMPT = 2;

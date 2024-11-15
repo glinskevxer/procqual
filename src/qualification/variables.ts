@@ -35,8 +35,8 @@ export interface FillerVariables {
   readonly classification: string;
   readonly diameter: Length;
   readonly depositThickness: Length;
-  readonly flux?: string;
-  readonly supplementalPowder?: boolean;
+  readonly flux?: string | undefined;
+  readonly supplementalPowder?: boolean | undefined;
 }
 
 export interface PositionVariables {
@@ -52,20 +52,20 @@ export interface PreheatVariables {
 
 export interface PwhtVariables {
   readonly applied: boolean;
-  readonly temperature?: Temperature;
-  readonly holdingHours?: Decimal;
+  readonly temperature?: Temperature | undefined;
+  readonly holdingHours?: Decimal | undefined;
 }
 
 export interface GasVariables {
-  readonly shieldingComposition?: string;
-  readonly shieldingFlowRate?: Decimal;
-  readonly backingGas?: string;
+  readonly shieldingComposition?: string | undefined;
+  readonly shieldingFlowRate?: Decimal | undefined;
+  readonly backingGas?: string | undefined;
 }
 
 export interface ElectricalVariables {
   readonly currentType: CurrentType;
-  readonly transferMode?: TransferMode;
-  readonly heatInputMaximum?: Decimal;
+  readonly transferMode?: TransferMode | undefined;
+  readonly heatInputMaximum?: Decimal | undefined;
   readonly amperageLow: Decimal;
   readonly amperageHigh: Decimal;
 }
@@ -74,8 +74,8 @@ export interface TechniqueVariables {
   readonly beadType: 'stringer' | 'weave';
   readonly passesPerSide: 'single' | 'multiple';
   readonly peening: boolean;
-  readonly electrodeSpacing?: Decimal;
-  readonly closedChamber?: boolean;
+  readonly electrodeSpacing?: Decimal | undefined;
+  readonly closedChamber?: boolean | undefined;
 }
 
 export interface WeldingVariables {

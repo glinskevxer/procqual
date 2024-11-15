@@ -40,7 +40,7 @@ export interface ElectrodeIssue {
   readonly oven: string;
   readonly issuedTo: string;
   readonly issuedAt: string;
-  readonly returnedAt?: string;
+  readonly returnedAt?: string | undefined;
   /** Hours the electrodes have already been out of the oven on earlier issues. */
   readonly priorExposureHours: Decimal;
   readonly rebakes: number;
