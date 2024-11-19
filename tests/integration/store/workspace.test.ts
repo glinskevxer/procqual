@@ -91,6 +91,78 @@ describe('a marker it will not read', () => {
   });
 });
 
+describe('bringing an older workspace forward', () => {
+  const writeOldWorkspace = () => {
+    const workspace = Workspace.open(directory, { clock, create: true });
+    workspace.personnel.registerWelder(sampleWelder(), 'kd');
+    workspace.journal.append({
+      type: 'wpq.recorded',
+      actor: 'kd',
+      at: '2024-01-16T09:00:00.000Z',
+      payload: {
+        number: 'WPQ-0231',
+        stencil: 'W-118',
+        weldedOn: '2024-01-16',
+        process: 'SMAW',
+        weldType: 'groove',
+        productForm: 'plate',
+        position: '3G',
+        verticalProgression: 'uphill',
+        fNumber: 4,
+        backing: true,
+        depositThickness: '0.375',
+        layers: 5,
+        outsideDiameter: null,
+        testMethod: 'bend',
+        passed: true,
+        witnessedBy: 'QA-3',
+      },
+    });
+    writeFileSync(
+      join(directory, 'arc.json'),
+      JSON.stringify({ schemaVersion: 1, shop: 'bay four', createdAt: '2024-01-01T00:00:00.000Z' }),
+      'utf8',
+    );
+  };
+
+  it('rewrites the journal and bumps the marker', () => {
+    writeOldWorkspace();
+    const workspace = Workspace.open(directory, { clock });
+    expect(workspace.marker.schemaVersion).toBe(SCHEMA_VERSION);
+    expect(workspace.personnel.entries()[0]?.couponPNumber).toBe('1');
+  });
+
+  it('writes an entry saying what it did', () => {
+    writeOldWorkspace();
+    const workspace = Workspace.open(directory, { clock });
+    const migration = workspace.journal.read().find((entry) => entry.type === 'workspace.migrated');
+    expect(migration?.payload.from).toBe(1);
+    expect(migration?.payload.to).toBe(SCHEMA_VERSION);
+  });
+
+  it('keeps the journal it started from', () => {
+    writeOldWorkspace();
+    Workspace.open(directory, { clock });
+    const backup = readFileSync(join(directory, 'journal.ndjson.schema1'), 'utf8');
+    expect(backup).toContain('wpq.recorded');
+    expect(backup).not.toContain('couponPNumber');
+  });
+
+  it('does nothing at all on a workspace that is already current', () => {
+    const workspace = Workspace.open(directory, { clock, create: true });
+    workspace.personnel.registerWelder(sampleWelder(), 'kd');
+    const before = workspace.journal.length();
+    expect(Workspace.open(directory, { clock }).journal.length()).toBe(before);
+  });
+
+  it('refuses to rewrite one opened read only', () => {
+    writeOldWorkspace();
+    expect(() => Workspace.open(directory, { clock, readOnly: true })).toThrow(
+      /cannot be brought forward/,
+    );
+  });
+});
+
 describe('an in memory workspace', () => {
   it('works the same way and writes nothing', () => {
     const workspace = Workspace.inMemory({ clock });

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -7,6 +7,7 @@ import { StorageError, ValidationError } from '../core/errors.js';
 import { FileJournal } from './fileJournal.js';
 import type { Journal } from './journal.js';
 import { MemoryJournal } from './journal.js';
+import { describeMigration, LATEST_SCHEMA, migrate, migrationsFrom } from './migrations.js';
 import { ExaminationStore } from './examinationStore.js';
 import { FabricationStore } from './fabricationStore.js';
 import { MaterialStore } from './materialStore.js';
@@ -23,7 +24,7 @@ import { ProcedureStore } from './procedureStore.js';
  * record is worse than not reading it.
  */
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = LATEST_SCHEMA;
 
 const MARKER = 'arc.json';
 const JOURNAL = 'journal.ndjson';
@@ -39,6 +40,8 @@ export interface OpenOptions {
   readonly create?: boolean | undefined;
   readonly shop?: string | undefined;
   readonly tolerateTornTail?: boolean | undefined;
+  /** Open a workspace written by an older build without rewriting it. */
+  readonly readOnly?: boolean | undefined;
 }
 
 export class Workspace {
@@ -95,7 +98,8 @@ export class Workspace {
       JOURNAL,
       options.tolerateTornTail === true ? { tolerateTornTail: true } : {},
     );
-    return new Workspace(path, marker, journal, clock);
+    const migrated = migrateIfNeeded(path, marker, journal, clock, options.readOnly === true);
+    return new Workspace(path, migrated, journal, clock);
   }
 
   /** A workspace held entirely in memory, for tests and for a dry run. */
@@ -134,6 +138,53 @@ export function defaultWorkspacePath(environment: NodeJS.ProcessEnv = process.en
     return resolve(named.trim());
   }
   return join(homedir(), '.arc');
+}
+
+/**
+ * Bring an older workspace forward, keeping the file it started from.
+ *
+ * The backup is not tidied up afterwards on purpose. It is the only copy of
+ * the journal with its original hashes, and the disk it costs is nothing
+ * against being able to show an inspector what the record said before the
+ * program touched it.
+ */
+function migrateIfNeeded(
+  path: string,
+  marker: WorkspaceMarker,
+  journal: FileJournal,
+  clock: Clock,
+  readOnly: boolean,
+): WorkspaceMarker {
+  if (migrationsFrom(marker.schemaVersion).length === 0) {
+    return marker;
+  }
+  if (readOnly) {
+    throw new StorageError(
+      `the workspace at ${path} is at schema ${marker.schemaVersion} and has been opened read only, so it cannot be brought forward`,
+      { directory: path, schemaVersion: marker.schemaVersion },
+    );
+  }
+  const journalPath = join(path, JOURNAL);
+  copyFileSync(journalPath, `${journalPath}.schema${String(marker.schemaVersion)}`);
+
+  const result = migrate(journal.read(), marker.schemaVersion);
+  journal.rewrite(result.entries);
+  journal.append({
+    type: 'workspace.migrated',
+    actor: 'arc',
+    at: clock.now().toISOString(),
+    payload: {
+      from: result.from,
+      to: result.to,
+      rewritten: result.rewritten,
+      dropped: result.dropped,
+      description: describeMigration(result),
+    },
+  });
+
+  const updated: WorkspaceMarker = { ...marker, schemaVersion: result.to };
+  writeFileSync(join(path, MARKER), `${JSON.stringify(updated, null, 2)}\n`, 'utf8');
+  return updated;
 }
 
 function readMarker(path: string): WorkspaceMarker {
