@@ -10,6 +10,7 @@ import { proceduresCommand } from './commands/procedures.js';
 import { reportCommand } from './commands/report.js';
 import { weldCommand } from './commands/weld.js';
 import { weldersCommand } from './commands/welders.js';
+import { workspaceCommand } from './commands/workspace.js';
 import type { Context } from './context.js';
 import { createContext } from './context.js';
 import type { Output } from './output.js';
@@ -49,6 +50,7 @@ export function buildProgram(out: Output, context: Context = createContext()): C
   program.addCommand(reportCommand(out, context));
   program.addCommand(weldCommand(out, context));
   program.addCommand(weldersCommand(out, context));
+  program.addCommand(workspaceCommand(out, context));
   routeOutput(program, out);
   return program;
 }
