@@ -2,6 +2,7 @@ import type { ProcessCode } from '../codes/process.js';
 import { Decimal, decimal } from '../core/decimal.js';
 import { advisory, blocking, deficiency, type Finding, ValidationError } from '../core/errors.js';
 import type { PlainDate } from '../core/plainDate.js';
+import { DEFAULT_POLICY, type ShopPolicy } from '../policy/shopPolicy.js';
 
 /**
  * The repair rate, over a rolling window, per welder and per process.
@@ -17,9 +18,6 @@ import type { PlainDate } from '../core/plainDate.js';
  * has to say which of the two it is.
  */
 
-export const DEFAULT_WINDOW_DAYS = 90;
-export const DEFAULT_MINIMUM_SAMPLE = 10;
-
 export interface RatePolicy {
   readonly windowDays: number;
   readonly minimumSample: number;
@@ -29,12 +27,16 @@ export interface RatePolicy {
   readonly suspendAt: Decimal;
 }
 
-export const SHOP_POLICY: RatePolicy = {
-  windowDays: DEFAULT_WINDOW_DAYS,
-  minimumSample: DEFAULT_MINIMUM_SAMPLE,
-  watchAt: decimal('0.05'),
-  suspendAt: decimal('0.10'),
-};
+export function ratePolicyOf(policy: ShopPolicy): RatePolicy {
+  return {
+    windowDays: policy.repairWindowDays,
+    minimumSample: policy.repairMinimumSample,
+    watchAt: policy.repairWatchAt,
+    suspendAt: policy.repairSuspendAt,
+  };
+}
+
+export const SHOP_POLICY: RatePolicy = ratePolicyOf(DEFAULT_POLICY);
 
 export interface WeldRecord {
   readonly stencil: string;

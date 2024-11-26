@@ -1,5 +1,6 @@
 import { advisory, blocking, deficiency, type Finding } from '../core/errors.js';
 import { latest, type PlainDate } from '../core/plainDate.js';
+import { DEFAULT_POLICY, type ShopPolicy } from '../policy/shopPolicy.js';
 import { isRevoked, type PerformanceQualification } from './welder.js';
 
 /**
@@ -7,7 +8,8 @@ import { isRevoked, type PerformanceQualification } from './welder.js';
  * qualifications away every summer.
  *
  * A welder stays qualified with a process indefinitely, on one condition: they
- * have to have used it in the last six months. The clock runs per process and
+ * have to have used it inside the shop's continuity window, which the code
+ * caps at six months and a shop may set shorter. The clock runs per process and
  * it restarts on every day the welder deposits metal with that process, on
  * production or on a coupon. A man who runs covered electrode every day and
  * has not picked up a tungsten torch since February is qualified for one and
@@ -19,8 +21,6 @@ import { isRevoked, type PerformanceQualification } from './welder.js';
  * qualified. A revocation is a judgement that the welder cannot do the work,
  * and nothing renews it except qualifying again from the start.
  */
-
-export const CONTINUITY_MONTHS = 6;
 
 export type ContinuityState = 'not-yet' | 'current' | 'lapsed' | 'revoked' | 'failed';
 
@@ -40,12 +40,13 @@ export function continuityStatusOn(
   qualification: PerformanceQualification,
   usageDates: readonly PlainDate[],
   on: PlainDate,
+  policy: ShopPolicy = DEFAULT_POLICY,
 ): ContinuityStatus {
   const lastUsed = latest(
     qualification.weldedOn,
     ...usageDates.filter((day) => day.isOnOrBefore(on)),
   );
-  const expiresOn = lastUsed.addMonths(CONTINUITY_MONTHS);
+  const expiresOn = lastUsed.addMonths(policy.continuityMonths);
   const daysRemaining = on.daysUntil(expiresOn);
 
   if (!qualification.passed) {
@@ -81,7 +82,7 @@ export function continuityStatusOn(
       lastUsed,
       expiresOn,
       daysRemaining,
-      reason: `${qualification.process} last used on ${lastUsed.toString()}, more than ${CONTINUITY_MONTHS} months ago`,
+      reason: `${qualification.process} last used on ${lastUsed.toString()}, more than ${String(policy.continuityMonths)} months ago`,
     };
   }
   return {
@@ -126,11 +127,12 @@ export function renew(
 export function continuityFindings(
   qualification: PerformanceQualification,
   status: ContinuityStatus,
+  policy: ShopPolicy = DEFAULT_POLICY,
 ): readonly Finding[] {
   const subject = `${qualification.stencil} ${qualification.process}`;
   switch (status.state) {
     case 'current':
-      return status.daysRemaining <= 30
+      return status.daysRemaining <= policy.continuityWarningDays
         ? [
             advisory('continuity.due_soon', `${subject} lapses in ${status.daysRemaining} days`, {
               clause: 'QW-322.1',

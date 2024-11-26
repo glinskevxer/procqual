@@ -13,6 +13,7 @@ import { FabricationStore } from './fabricationStore.js';
 import { MaterialStore } from './materialStore.js';
 import { PersonnelStore } from './personnelStore.js';
 import { ProcedureStore } from './procedureStore.js';
+import { DEFAULT_POLICY, loadPolicy, type ShopPolicy } from '../policy/shopPolicy.js';
 
 /**
  * A workspace is one directory holding one shop's records.
@@ -42,6 +43,8 @@ export interface OpenOptions {
   readonly tolerateTornTail?: boolean | undefined;
   /** Open a workspace written by an older build without rewriting it. */
   readonly readOnly?: boolean | undefined;
+  /** Only for an in memory workspace, where there is no file to read one from. */
+  readonly policy?: ShopPolicy | undefined;
 }
 
 export class Workspace {
@@ -54,8 +57,16 @@ export class Workspace {
   readonly procedures: ProcedureStore;
   readonly examinations: ExaminationStore;
   readonly materials: MaterialStore;
+  readonly policy: ShopPolicy;
 
-  private constructor(directory: string, marker: WorkspaceMarker, journal: Journal, clock: Clock) {
+  private constructor(
+    directory: string,
+    marker: WorkspaceMarker,
+    journal: Journal,
+    clock: Clock,
+    policy: ShopPolicy,
+  ) {
+    this.policy = policy;
     this.directory = directory;
     this.marker = marker;
     this.journal = journal;
@@ -99,7 +110,7 @@ export class Workspace {
       options.tolerateTornTail === true ? { tolerateTornTail: true } : {},
     );
     const migrated = migrateIfNeeded(path, marker, journal, clock, options.readOnly === true);
-    return new Workspace(path, migrated, journal, clock);
+    return new Workspace(path, migrated, journal, clock, loadPolicy(path));
   }
 
   /** A workspace held entirely in memory, for tests and for a dry run. */
@@ -114,6 +125,7 @@ export class Workspace {
       },
       new MemoryJournal(),
       clock,
+      options.policy ?? DEFAULT_POLICY,
     );
   }
 

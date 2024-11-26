@@ -1,6 +1,7 @@
 import { advisory, blocking, deficiency, type Finding, ValidationError } from '../core/errors.js';
 import type { PlainDate } from '../core/plainDate.js';
 import type { Length } from '../core/units.js';
+import { DEFAULT_POLICY, type ShopPolicy } from '../policy/shopPolicy.js';
 import type { Examination, IndicationType } from './examination.js';
 import type { ExaminationMethod } from './requirement.js';
 
@@ -38,7 +39,7 @@ export interface Repair {
   readonly engineeringApproval?: string | undefined;
 }
 
-export const APPROVAL_NEEDED_FROM_ATTEMPT = 2;
+export const APPROVAL_NEEDED_FROM_ATTEMPT = DEFAULT_POLICY.repairApprovalFromAttempt;
 
 /** A repair deeper than this fraction of the wall is a design question. */
 const DEEP_EXCAVATION_FRACTION = '0.5';
@@ -54,8 +55,11 @@ export function isDeepExcavation(repair: Repair): boolean {
   );
 }
 
-export function needsEngineeringApproval(repair: Repair): boolean {
-  return repair.attempt >= APPROVAL_NEEDED_FROM_ATTEMPT || isDeepExcavation(repair);
+export function needsEngineeringApproval(
+  repair: Repair,
+  policy: ShopPolicy = DEFAULT_POLICY,
+): boolean {
+  return repair.attempt >= policy.repairApprovalFromAttempt || isDeepExcavation(repair);
 }
 
 export function isComplete(repair: Repair): boolean {
@@ -65,6 +69,7 @@ export function isComplete(repair: Repair): boolean {
 export function reviewRepair(
   repair: Repair,
   reExamination: Examination | undefined,
+  policy: ShopPolicy = DEFAULT_POLICY,
 ): readonly Finding[] {
   const findings: Finding[] = [];
   const subject = repair.id;
@@ -86,7 +91,7 @@ export function reviewRepair(
       ),
     );
   }
-  if (needsEngineeringApproval(repair) && repair.engineeringApproval === undefined) {
+  if (needsEngineeringApproval(repair, policy) && repair.engineeringApproval === undefined) {
     findings.push(
       blocking(
         'repair.needs_approval',
@@ -146,7 +151,7 @@ export function reviewRepair(
       }),
     );
   }
-  if (repair.attempt >= APPROVAL_NEEDED_FROM_ATTEMPT) {
+  if (repair.attempt >= policy.repairApprovalFromAttempt) {
     findings.push(
       advisory(
         'repair.repeat',

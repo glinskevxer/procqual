@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { date } from '../../../src/core/plainDate.js';
+import { DEFAULT_POLICY, policyFrom } from '../../../src/policy/shopPolicy.js';
 import {
-  CONTINUITY_MONTHS,
   continuityFindings,
   continuityStatusOn,
   dueWithinDays,
@@ -39,7 +39,7 @@ describe('the six month clock', () => {
   });
 
   it('counts the months rather than a fixed number of days', () => {
-    expect(CONTINUITY_MONTHS).toBe(6);
+    expect(DEFAULT_POLICY.continuityMonths).toBe(6);
     expect(status([], '2024-07-16').daysRemaining).toBe(0);
     expect(status([], '2024-07-01').daysRemaining).toBe(15);
   });
@@ -54,6 +54,24 @@ describe('the six month clock', () => {
     const result = status([], '2024-01-15');
     expect(result.state).toBe('not-yet');
     expect(isCurrent(result)).toBe(false);
+  });
+});
+
+describe('a shop that sets a shorter window', () => {
+  const strict = policyFrom({ continuityMonths: 3, continuityWarningDays: 60 });
+
+  it('lapses a coupon the code would still allow', () => {
+    const inside = continuityStatusOn(sampleQualification(), [], date('2024-06-01'));
+    expect(inside.state).toBe('current');
+    const outside = continuityStatusOn(sampleQualification(), [], date('2024-06-01'), strict);
+    expect(outside.state).toBe('lapsed');
+    expect(outside.reason).toContain('more than 3 months ago');
+  });
+
+  it('warns earlier as well', () => {
+    const status = continuityStatusOn(sampleQualification(), [], date('2024-03-01'), strict);
+    const findings = continuityFindings(sampleQualification(), status, strict);
+    expect(findings[0]?.code).toBe('continuity.due_soon');
   });
 });
 
