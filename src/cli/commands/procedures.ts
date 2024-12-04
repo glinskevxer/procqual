@@ -3,6 +3,8 @@ import { Command } from 'commander';
 import { DocumentNumber } from '../../core/identifier.js';
 import { PlainDate } from '../../core/plainDate.js';
 import { keyValues } from '../../core/text.js';
+import { describeSuggestion, suggestCoupons } from '../../qualification/couponPlanner.js';
+import { draftFrom, draftIsSupported, nextDraftNumber } from '../../qualification/draft.js';
 import { assessRevision } from '../../qualification/revision.js';
 import { supportFindings, unsupportedClauses } from '../../qualification/support.js';
 import { describeProcedure, isInForce, reviewProcedure } from '../../qualification/wps.js';
@@ -148,6 +150,72 @@ export function proceduresCommand(out: Output, context: Context): Command {
           : 'the records still cover it',
       );
     });
+
+  command
+    .command('gap <number>')
+    .description('what coupon would make an unsupported procedure supported')
+    .action((number: string) => {
+      const store = context.workspace().procedures;
+      const procedure = store.requireProcedure(DocumentNumber.parse(number));
+      const suggestions = suggestCoupons(procedure, store.recordsBehind(procedure));
+      if (suggestions.length === 0) {
+        out.line(`${procedure.number.toString()} is already supported`);
+        return;
+      }
+      printHeading(out, `To support ${procedure.number.toString()}`);
+      for (const suggestion of suggestions) {
+        out.line(describeSuggestion(suggestion));
+        for (const reason of suggestion.reasons) {
+          out.line(`  ${reason}`);
+        }
+      }
+    });
+
+  command
+    .command('draft <record>')
+    .description('write the widest procedure a record will support')
+    .requiredOption('--title <text>', 'what to call it')
+    .option('--number <number>', 'the number to issue it under')
+    .option('--process <code...>', 'narrow the draft to these processes')
+    .option('--issue', 'issue it rather than only printing it', false)
+    .action(
+      (
+        recordNumber: string,
+        options: { title: string; number?: string; process?: string[]; issue: boolean },
+      ) => {
+        const store = context.workspace().procedures;
+        const record = store.requireRecord(DocumentNumber.parse(recordNumber).key());
+        const number =
+          options.number === undefined
+            ? nextDraftNumber(store.procedures().map((item) => item.number))
+            : DocumentNumber.parse(options.number);
+        const draft = draftFrom(record, {
+          number,
+          title: options.title,
+          issuedOn: context.clock.today(),
+          processes: options.process,
+        });
+        printHeading(out, describeProcedure(draft));
+        out.line(
+          keyValues([
+            [
+              'base metals',
+              `P-No ${draft.pNumbers.join('/')} groups ${draft.groupNumbers.join('/')}`,
+            ],
+            ['thickness', draft.baseMetalThickness.toString()],
+            ['positions', draft.positions.join(', ')],
+            ['heat treatment', draft.pwht],
+            ['notch toughness', draft.toughnessQualified ? 'yes' : 'no'],
+            ['supported', draftIsSupported(record, draft) ? 'yes' : 'no'],
+          ]),
+        );
+        if (options.issue) {
+          store.issue(draft, context.actor);
+          out.line('');
+          out.line(`${draft.number.toString()} issued`);
+        }
+      },
+    );
 
   command
     .command('withdraw <number>')

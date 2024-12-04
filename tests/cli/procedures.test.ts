@@ -147,6 +147,68 @@ describe('arc procedures compare', () => {
   });
 });
 
+describe('arc procedures gap', () => {
+  it('says so when the procedure is already supported', async () => {
+    await invoke('procedures', 'issue', writeProcedure('wps.json'));
+    const { out } = await invoke('procedures', 'gap', 'WPS-0110 Rev 0');
+    expect(out.text()).toBe('WPS-0110 Rev 0 is already supported');
+  });
+
+  it('names the coupon that would close it', async () => {
+    await invoke('procedures', 'issue', writeProcedure('wide.json', { pNumbers: ['1', '3'] }));
+    const { out } = await invoke('procedures', 'gap', 'WPS-0110 Rev 0');
+    expect(out.text()).toContain('SMAW coupon');
+    expect(out.text()).toContain('P-No 3');
+    expect(out.text()).toContain('reaches the others downward');
+  });
+});
+
+describe('arc procedures draft', () => {
+  it('prints a draft without issuing it', async () => {
+    const { out } = await invoke('procedures', 'draft', 'PQR-0042', '--title', 'drafted');
+    expect(out.text()).toContain('WPS-0001 Rev 0');
+    expect(out.text()).toContain('supported:       yes');
+    expect(context.workspace().procedures.procedures()).toHaveLength(0);
+  });
+
+  it('issues it when asked', async () => {
+    const { out } = await invoke(
+      'procedures',
+      'draft',
+      'PQR-0042',
+      '--title',
+      'drafted',
+      '--issue',
+    );
+    expect(out.text()).toContain('issued');
+    expect(context.workspace().procedures.procedures()).toHaveLength(1);
+  });
+
+  it('takes the next number past what is already issued', async () => {
+    await invoke('procedures', 'issue', writeProcedure('wps.json'));
+    const { out } = await invoke('procedures', 'draft', 'PQR-0042', '--title', 'drafted');
+    expect(out.text()).toContain('WPS-0111 Rev 0');
+  });
+
+  it('narrows to the processes asked for', async () => {
+    const { out } = await invoke(
+      'procedures',
+      'draft',
+      'PQR-0042',
+      '--title',
+      'drafted',
+      '--process',
+      'GTAW',
+    );
+    expect(out.text()).toContain('base metals:     P-No  groups');
+  });
+
+  it('refuses a record nobody has filed', async () => {
+    const { result } = await invoke('procedures', 'draft', 'PQR-9999', '--title', 'x');
+    expect(result.code).toBe(2);
+  });
+});
+
 describe('arc procedures withdraw', () => {
   it('withdraws a revision', async () => {
     await invoke('procedures', 'issue', writeProcedure('wps.json'));
