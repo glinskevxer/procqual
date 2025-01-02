@@ -22,7 +22,12 @@ export interface ElementBand {
 
 export type Element = 'C' | 'Cr' | 'Mo' | 'Ni' | 'Mn' | 'Si' | 'V';
 
-export type DepositAnalysis = Partial<Record<Element, Decimal>>;
+/**
+ * A reported analysis. An element the certificate did not report is absent,
+ * and a caller building one field by field may hand the field over as
+ * undefined and mean the same thing.
+ */
+export type DepositAnalysis = Partial<Record<Element, Decimal | undefined>>;
 
 export interface ANumberFacts {
   readonly code: number;

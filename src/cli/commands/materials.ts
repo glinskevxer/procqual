@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 
-import { decimal } from '../../core/decimal.js';
+import { decimal, type Decimal } from '../../core/decimal.js';
 import { ValidationError } from '../../core/errors.js';
 import { PlainDate } from '../../core/plainDate.js';
 import { keyValues } from '../../core/text.js';
@@ -17,7 +17,15 @@ import { printFindings, printHeading, printTable } from '../output.js';
 const ELEMENTS: readonly Element[] = ['C', 'Cr', 'Mo', 'Ni', 'Mn', 'Si', 'V'];
 
 function readAnalysis(values: readonly string[]): DepositAnalysis {
-  const analysis: DepositAnalysis = {};
+  const analysis: Record<Element, Decimal | undefined> = {
+    C: undefined,
+    Cr: undefined,
+    Mo: undefined,
+    Ni: undefined,
+    Mn: undefined,
+    Si: undefined,
+    V: undefined,
+  };
   for (const pair of values) {
     const [element, amount] = pair.split('=');
     const found = ELEMENTS.find((candidate) => candidate === element?.trim());
