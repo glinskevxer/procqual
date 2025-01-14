@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { ArcError } from '../core/errors.js';
 import { assignCommand } from './commands/assign.js';
 import { codesCommand } from './commands/codes.js';
+import { exportCommand } from './commands/exportCommand.js';
 import { importCommand } from './commands/importCommand.js';
 import { jointsCommand } from './commands/joints.js';
 import { materialsCommand } from './commands/materials.js';
@@ -46,6 +47,7 @@ export function buildProgram(out: Output, context: Context = createContext()): C
 
   program.addCommand(assignCommand(out, context));
   program.addCommand(codesCommand(out));
+  program.addCommand(exportCommand(out, context));
   program.addCommand(importCommand(out, context));
   program.addCommand(jointsCommand(out, context));
   program.addCommand(materialsCommand(out, context));
