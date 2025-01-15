@@ -1,12 +1,9 @@
-import { writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-
 import { Command } from 'commander';
 
-import { ValidationError } from '../../core/errors.js';
 import { DocumentNumber } from '../../core/identifier.js';
 import { procedureForm, recordForm, type FormHeader } from '../../reporting/forms.js';
 import type { Context } from '../context.js';
+import { writeNewFile } from '../files.js';
 import type { Output } from '../output.js';
 import { VERSION } from '../program.js';
 
@@ -33,15 +30,7 @@ export function printCommand(out: Output, context: Context): Command {
       out.line(text);
       return;
     }
-    const resolved = resolve(path);
-    try {
-      writeFileSync(resolved, `${text}\n`, { encoding: 'utf8', flag: 'wx' });
-    } catch (error) {
-      throw new ValidationError('out', `cannot write ${resolved}`, {
-        cause: error instanceof Error ? error.message : String(error),
-      });
-    }
-    out.line(`written to ${resolved}`);
+    out.line(`written to ${writeNewFile(path, text)}`);
   };
 
   command

@@ -11,6 +11,7 @@ import {
 import type { RegisterEntry } from '../../personnel/register.js';
 import { normaliseStencil, type PerformanceQualification } from '../../personnel/welder.js';
 import type { Context } from '../context.js';
+import { onDate } from '../files.js';
 import type { Output } from '../output.js';
 import { printHeading, printTable } from '../output.js';
 
@@ -24,10 +25,6 @@ function statusRows(entries: readonly RegisterEntry[], on: PlainDate): StatusRow
     qualification: entry.qualification,
     status: continuityStatusOn(entry.qualification, entry.usageDates, on),
   }));
-}
-
-function today(context: Context, given?: string): PlainDate {
-  return given === undefined ? context.clock.today() : PlainDate.parse(given);
 }
 
 /**
@@ -71,7 +68,7 @@ export function weldersCommand(out: Output, context: Context): Command {
     .option('--on <date>', 'read the register as it stood on this day')
     .action((options: { on?: string }) => {
       const workspace = context.workspace();
-      const on = today(context, options.on);
+      const on = onDate(context, options.on);
       const welders = workspace.personnel.welders();
       printHeading(out, `Welder register at ${on.toString()}`);
       printTable(
@@ -114,7 +111,7 @@ export function weldersCommand(out: Output, context: Context): Command {
     .option('--on <date>', 'read it as it stood on this day')
     .option('--due <days>', 'show only those lapsing inside this many days')
     .action((options: { on?: string; due?: string }) => {
-      const on = today(context, options.on);
+      const on = onDate(context, options.on);
       const entries = context.workspace().personnel.entries();
       const rows = statusRows(entries, on);
       const shown =

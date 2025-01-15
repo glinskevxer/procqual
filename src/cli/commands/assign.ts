@@ -1,12 +1,12 @@
 import { Command } from 'commander';
 
 import { parseProcess } from '../../codes/process.js';
-import { PlainDate } from '../../core/plainDate.js';
 import { pluralise } from '../../core/text.js';
 import { assess, jointRequirement, reasonsRefused } from '../../fabrication/assignment.js';
 import { eligibleWelders } from '../../personnel/register.js';
 import { claimFor } from '../../qualification/wps.js';
 import type { Context } from '../context.js';
+import { onDate } from '../files.js';
 import type { Output } from '../output.js';
 import { printFindings, printHeading, printTable } from '../output.js';
 
@@ -36,7 +36,7 @@ export function assignCommand(out: Output, context: Context): Command {
         const joint = workspace.fabrication.requireJoint(jointId);
         const procedure = workspace.procedures.requireProcedure(joint.procedure);
         const welder = workspace.personnel.requireWelder(stencil);
-        const on = options.on === undefined ? context.clock.today() : PlainDate.parse(options.on);
+        const on = onDate(context, options.on);
 
         const answer = assess({
           joint,
@@ -75,7 +75,7 @@ export function assignCommand(out: Output, context: Context): Command {
       const procedure = workspace.procedures.requireProcedure(joint.procedure);
       const process = parseProcess(options.process);
       const claim = claimFor(procedure, process);
-      const on = options.on === undefined ? context.clock.today() : PlainDate.parse(options.on);
+      const on = onDate(context, options.on);
 
       if (claim === undefined) {
         out.line(`${procedure.number.toString()} does not offer ${process}`);

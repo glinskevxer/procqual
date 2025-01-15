@@ -1,9 +1,7 @@
-import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { Command } from 'commander';
 
-import { ValidationError } from '../../core/errors.js';
 import { pluralise } from '../../core/text.js';
 import {
   importHeats,
@@ -14,6 +12,7 @@ import {
 } from '../../importing/importers.js';
 import type { Workspace } from '../../store/workspace.js';
 import type { Context } from '../context.js';
+import { readTextFile } from '../files.js';
 import type { Output } from '../output.js';
 import { printFindings, printHeading } from '../output.js';
 
@@ -35,15 +34,7 @@ export function importCommand(out: Output, context: Context): Command {
     importer: (workspace: Workspace, text: string, options: ImportOptions) => ImportResult,
   ): void => {
     const resolved = resolve(path);
-    let text: string;
-    try {
-      text = readFileSync(resolved, 'utf8');
-    } catch (error) {
-      throw new ValidationError('file', `cannot read ${resolved}`, {
-        cause: error instanceof Error ? error.message : String(error),
-      });
-    }
-    const result = importer(context.workspace(), text, {
+    const result = importer(context.workspace(), readTextFile(resolved), {
       dryRun: !write,
       actor: context.actor,
     });

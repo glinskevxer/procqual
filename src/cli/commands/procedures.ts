@@ -10,6 +10,7 @@ import { supportFindings, unsupportedClauses } from '../../qualification/support
 import { describeProcedure, isInForce, reviewProcedure } from '../../qualification/wps.js';
 import { procedureReader } from '../../store/procedureCodec.js';
 import type { Context } from '../context.js';
+import { onDate } from '../files.js';
 import type { Output } from '../output.js';
 import { printFindings, printHeading, printTable } from '../output.js';
 import { readRecordFile } from '../readFile.js';
@@ -49,7 +50,7 @@ export function proceduresCommand(out: Output, context: Context): Command {
     .description('every revision of every procedure')
     .option('--on <date>', 'show whether each was in force on this day')
     .action((options: { on?: string }) => {
-      const on = options.on === undefined ? context.clock.today() : PlainDate.parse(options.on);
+      const on = onDate(context, options.on);
       printHeading(out, `Procedure index at ${on.toString()}`);
       printTable(
         out,
