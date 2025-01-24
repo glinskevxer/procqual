@@ -13,6 +13,7 @@ import { FabricationStore } from './fabricationStore.js';
 import { MaterialStore } from './materialStore.js';
 import { PersonnelStore } from './personnelStore.js';
 import { ProcedureStore } from './procedureStore.js';
+import { VesselStore } from './vesselStore.js';
 import { DEFAULT_POLICY, loadPolicy, type ShopPolicy } from '../policy/shopPolicy.js';
 
 /**
@@ -58,6 +59,7 @@ export class Workspace {
   readonly examinations: ExaminationStore;
   readonly materials: MaterialStore;
   readonly policy: ShopPolicy;
+  readonly vessels: VesselStore;
 
   private constructor(
     directory: string,
@@ -76,6 +78,7 @@ export class Workspace {
     this.procedures = new ProcedureStore(journal, clock);
     this.examinations = new ExaminationStore(journal, clock);
     this.materials = new MaterialStore(journal, clock);
+    this.vessels = new VesselStore(journal, clock);
   }
 
   static open(directory: string, options: OpenOptions = {}): Workspace {
