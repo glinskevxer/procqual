@@ -109,5 +109,12 @@ describe('describing values', () => {
   it('prints anything else plainly', () => {
     expect(describeValue(4)).toBe('4');
     expect(describeValue(false)).toBe('false');
+    expect(describeValue('SMAW')).toBe('SMAW');
+    expect(describeValue(null)).toBe('none');
+  });
+
+  it('prints a value nobody planned for as json rather than as an object', () => {
+    expect(describeValue({ unexpected: true })).toBe('{"unexpected":true}');
+    expect(describeValue([1, 2])).toBe('[1,2]');
   });
 });

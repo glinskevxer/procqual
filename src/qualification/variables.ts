@@ -178,11 +178,20 @@ export function sameValue(left: unknown, right: unknown): boolean {
 }
 
 export function describeValue(value: unknown): string {
-  if (value === undefined) {
+  if (value === undefined || value === null) {
     return 'none';
   }
   if (value instanceof Length || value instanceof Temperature || value instanceof Decimal) {
     return value.toString();
   }
-  return String(value);
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+    return String(value);
+  }
+  // A variable read that came back as something nobody planned for. Printing
+  // it as [object Object] in a finding is worse than useless, so it goes out
+  // as json and somebody can see what the reader actually handed over.
+  return JSON.stringify(value);
 }
