@@ -1,6 +1,15 @@
 import { Command } from 'commander';
 
 import { parseProcess } from '../../codes/process.js';
+import { parseTestPosition } from '../../codes/position.js';
+import { DocumentNumber } from '../../core/identifier.js';
+import { Length } from '../../core/units.js';
+import {
+  assessProductionQualification,
+  describeEligibility,
+  eligibility,
+} from '../../personnel/productionQualification.js';
+import { reviewQualification } from '../../personnel/welder.js';
 import { PlainDate } from '../../core/plainDate.js';
 import { pluralise } from '../../core/text.js';
 import {
@@ -13,7 +22,7 @@ import { normaliseStencil, type PerformanceQualification } from '../../personnel
 import type { Context } from '../context.js';
 import { onDate } from '../files.js';
 import type { Output } from '../output.js';
-import { printHeading, printTable } from '../output.js';
+import { printFindings, printHeading, printTable } from '../output.js';
 
 interface StatusRow {
   qualification: PerformanceQualification;
@@ -104,6 +113,113 @@ export function weldersCommand(out: Output, context: Context): Command {
         );
       out.line(`${normaliseStencil(stencil)} ${parseProcess(process)} used on ${options.on}`);
     });
+
+  command
+    .command('coupon <number>')
+    .description('record a performance qualification coupon')
+    .requiredOption('--welder <stencil>', 'who ran it')
+    .requiredOption('--process <code>', 'the process used')
+    .requiredOption('--position <code>', 'the test position, as 3G')
+    .requiredOption('--filler <number>', 'the F number of the filler used')
+    .requiredOption('--deposit <length>', 'weld metal deposited')
+    .requiredOption('--layers <count>', 'layers deposited')
+    .requiredOption('--on <date>', 'the day it was welded')
+    .requiredOption('--witness <name>', 'who witnessed it')
+    .requiredOption('--base-metal <pNumber>', 'P number of the coupon material')
+    .option('--fillet', 'a fillet coupon rather than a groove one', false)
+    .option('--pipe <diameter>', 'a pipe coupon of this outside diameter')
+    .option('--backing', 'welded onto backing', false)
+    .option('--downhill', 'welded downhill', false)
+    .option('--failed', 'the coupon did not pass its tests', false)
+    .action(
+      (
+        number: string,
+        options: {
+          welder: string;
+          process: string;
+          position: string;
+          filler: string;
+          deposit: string;
+          layers: string;
+          on: string;
+          witness: string;
+          baseMetal: string;
+          fillet: boolean;
+          pipe?: string;
+          backing: boolean;
+          downhill: boolean;
+          failed: boolean;
+        },
+      ) => {
+        const workspace = context.workspace();
+        const qualification = {
+          number: DocumentNumber.parse(number),
+          stencil: normaliseStencil(options.welder),
+          weldedOn: PlainDate.parse(options.on),
+          process: parseProcess(options.process),
+          weldType: options.fillet ? ('fillet' as const) : ('groove' as const),
+          productForm: options.pipe === undefined ? ('plate' as const) : ('pipe' as const),
+          position: parseTestPosition(options.position),
+          verticalProgression: options.downhill ? ('downhill' as const) : ('uphill' as const),
+          fNumber: Number(options.filler),
+          backing: options.backing,
+          depositThickness: Length.parse(options.deposit),
+          layers: Number(options.layers),
+          outsideDiameter: options.pipe === undefined ? undefined : Length.parse(options.pipe),
+          testMethod: options.fillet ? ('macro' as const) : ('bend' as const),
+          passed: !options.failed,
+          witnessedBy: options.witness,
+        };
+        const findings = reviewQualification(
+          qualification,
+          workspace.personnel.welder(qualification.stencil),
+        );
+        if (findings.some((item) => item.severity === 'blocking')) {
+          printFindings(out, findings);
+          out.line('');
+          out.line('not recorded');
+          return;
+        }
+        workspace.personnel.recordQualification(qualification, options.baseMetal, context.actor);
+        out.line(`${qualification.number.key()} recorded for ${qualification.stencil}`);
+        printFindings(out, findings);
+      },
+    );
+
+  command
+    .command('production <welder> <joint> <report>')
+    .description('qualify a welder on a production radiograph instead of a coupon')
+    .requiredOption('--process <code>', 'the process used')
+    .requiredOption('--on <date>', 'the day the weld was run')
+    .option('--transfer <mode>', 'the transfer mode, where it matters')
+    .action(
+      (
+        stencil: string,
+        jointId: string,
+        reportId: string,
+        options: { process: string; on: string; transfer?: string },
+      ) => {
+        const workspace = context.workspace();
+        const joint = workspace.fabrication.requireJoint(jointId);
+        const examination = workspace.examinations.requireExamination(reportId);
+        const request = {
+          stencil: normaliseStencil(stencil),
+          process: parseProcess(options.process),
+          transferMode: options.transfer as undefined,
+          pNumber: '1',
+          joint: jointId,
+          weldedOn: PlainDate.parse(options.on),
+          examination,
+          jointThickness: joint.thickness,
+        };
+        out.line(describeEligibility(eligibility(request)));
+        const verdict = assessProductionQualification(request);
+        out.line('');
+        printFindings(out, verdict.findings);
+        out.line('');
+        out.line(verdict.qualified ? 'qualified' : 'not qualified');
+      },
+    );
 
   command
     .command('continuity')

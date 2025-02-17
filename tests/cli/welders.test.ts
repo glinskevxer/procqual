@@ -92,6 +92,62 @@ describe('arc welders list', () => {
   });
 });
 
+describe('arc welders coupon', () => {
+  const couponArgs = (number: string, extra: string[] = []) => [
+    'welders',
+    'coupon',
+    number,
+    '--welder',
+    'W-118',
+    '--process',
+    'SMAW',
+    '--position',
+    '3G',
+    '--filler',
+    '4',
+    '--deposit',
+    '3/8',
+    '--layers',
+    '5',
+    '--on',
+    '2024-01-16',
+    '--witness',
+    'QA-3',
+    '--base-metal',
+    '1',
+    ...extra,
+  ];
+
+  beforeEach(async () => {
+    await invoke('welders', 'add', 'W-118', 'R Ashworth', '--from', '2019-04-01');
+  });
+
+  it('records one', async () => {
+    const { out, result } = await invoke(...couponArgs('WPQ-0231'));
+    expect(result.code).toBe(0);
+    expect(out.text()).toContain('WPQ-0231 recorded for W-118');
+    expect(context.workspace().personnel.entries()).toHaveLength(1);
+  });
+
+  it('records a pipe coupon with its diameter', async () => {
+    await invoke(...couponArgs('WPQ-0232', ['--pipe', '6', '--position', '6G']));
+    expect(
+      context.workspace().personnel.entries()[0]?.qualification.outsideDiameter?.toFraction(),
+    ).toBe('6');
+  });
+
+  it('refuses a coupon witnessed by nobody and records nothing', async () => {
+    const { out } = await invoke(...couponArgs('WPQ-0233', ['--witness', ' ']));
+    expect(out.text()).toContain('not recorded');
+    expect(context.workspace().personnel.entries()).toEqual([]);
+  });
+
+  it('refuses a position it cannot read', async () => {
+    const { result } = await invoke(...couponArgs('WPQ-0234', ['--position', '7G']));
+    expect(result.code).toBe(2);
+  });
+});
+
 describe('arc welders continuity', () => {
   beforeEach(async () => {
     await invoke('welders', 'add', 'W-118', 'R Ashworth', '--from', '2019-04-01');
