@@ -8,7 +8,9 @@ import { FixedClock } from '../../../src/core/clock.js';
 import { StorageError, ValidationError } from '../../../src/core/errors.js';
 import { date } from '../../../src/core/plainDate.js';
 import { defaultWorkspacePath, SCHEMA_VERSION, Workspace } from '../../../src/store/workspace.js';
-import { sampleWelder } from '../../support/welders.js';
+import { sampleJoint } from '../../support/joints.js';
+import { sampleEntry } from '../../support/weldLog.js';
+import { sampleQualification, sampleWelder } from '../../support/welders.js';
 
 let directory: string;
 const clock = new FixedClock('2024-07-01T08:00:00.000Z');
@@ -160,6 +162,29 @@ describe('bringing an older workspace forward', () => {
     expect(() => Workspace.open(directory, { clock, readOnly: true })).toThrow(
       /cannot be brought forward/,
     );
+  });
+});
+
+describe('the register entries', () => {
+  it('fold the weld log into the continuity clock', () => {
+    const workspace = Workspace.open(directory, { clock, create: true });
+    workspace.personnel.registerWelder(sampleWelder(), 'kd');
+    workspace.personnel.recordQualification(sampleQualification(), '1', 'kd');
+    expect(workspace.registerEntries()[0]?.usageDates).toEqual([]);
+
+    workspace.fabrication.mapJoint(sampleJoint(), 'kd');
+    workspace.fabrication.logWeld(sampleEntry({ weldedOn: date('2024-06-11') }), 'foreman');
+    expect(workspace.registerEntries()[0]?.usageDates.map(String)).toEqual(['2024-06-11']);
+  });
+
+  it('do not count a day twice when it came from both directions', () => {
+    const workspace = Workspace.open(directory, { clock, create: true });
+    workspace.personnel.registerWelder(sampleWelder(), 'kd');
+    workspace.personnel.recordQualification(sampleQualification(), '1', 'kd');
+    workspace.personnel.recordUse('W-118', 'SMAW', date('2024-06-11'), 'foreman');
+    workspace.fabrication.mapJoint(sampleJoint(), 'kd');
+    workspace.fabrication.logWeld(sampleEntry({ weldedOn: date('2024-06-11') }), 'foreman');
+    expect(workspace.registerEntries()[0]?.usageDates.map(String)).toEqual(['2024-06-11']);
   });
 });
 

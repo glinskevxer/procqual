@@ -70,7 +70,3 @@ export function printFindings(out: Output, findings: readonly Finding[]): void {
     out.line(describeFinding(finding));
   }
 }
-
-export function printJson(out: Output, value: unknown): void {
-  out.line(JSON.stringify(value, null, 2));
-}

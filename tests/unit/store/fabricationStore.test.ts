@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { FixedClock } from '../../../src/core/clock.js';
 import { ConflictError, NotFoundError } from '../../../src/core/errors.js';
+import { date } from '../../../src/core/plainDate.js';
 import { inches } from '../../../src/core/units.js';
 import { FabricationStore } from '../../../src/store/fabricationStore.js';
 import { MemoryJournal } from '../../../src/store/journal.js';
@@ -122,7 +123,26 @@ describe('voiding an entry', () => {
 
   it('leaves a voided entry out of the usage dates', () => {
     store.voidEntry('L-1001', 'x', 'qa');
-    expect(store.usageDatesFor('W-118')).toHaveLength(1);
+    store.voidEntry('L-1002', 'x', 'qa');
+    expect(store.usageDates('W-118', 'SMAW')).toEqual([]);
+  });
+});
+
+describe('the usage dates', () => {
+  beforeEach(() => {
+    store.mapJoint(sampleJoint(), 'kd');
+    store.logWeld(sampleEntry({ id: 'L-1', weldedOn: date('2024-07-02') }), 'foreman');
+    store.logWeld(sampleEntry({ id: 'L-2', weldedOn: date('2024-07-02') }), 'foreman');
+    store.logWeld(sampleEntry({ id: 'L-3', weldedOn: date('2024-08-11') }), 'foreman');
+    store.logWeld(sampleEntry({ id: 'L-4', process: 'GTAW' }), 'foreman');
+  });
+
+  it('gives one date per day for one process', () => {
+    expect(store.usageDates('W-118', 'SMAW').map(String)).toEqual(['2024-07-02', '2024-08-11']);
+  });
+
+  it('keeps the processes apart', () => {
+    expect(store.usageDates('W-118', 'GTAW')).toHaveLength(1);
   });
 });
 

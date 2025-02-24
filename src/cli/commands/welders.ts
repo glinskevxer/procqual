@@ -17,7 +17,7 @@ import {
   dueWithinDays,
   type ContinuityStatus,
 } from '../../personnel/continuity.js';
-import type { RegisterEntry } from '../../personnel/register.js';
+import { processesHeld, type RegisterEntry } from '../../personnel/register.js';
 import { normaliseStencil, type PerformanceQualification } from '../../personnel/welder.js';
 import type { Context } from '../context.js';
 import { onDate } from '../files.js';
@@ -92,6 +92,10 @@ export function weldersCommand(out: Output, context: Context): Command {
             header: 'coupons',
             align: 'right',
             value: (row) => String(workspace.personnel.entriesFor(row.stencil).length),
+          },
+          {
+            header: 'current',
+            value: (row) => processesHeld(workspace.registerEntries(), row.stencil, on).join(', '),
           },
         ],
         'nobody on the register',
@@ -228,7 +232,7 @@ export function weldersCommand(out: Output, context: Context): Command {
     .option('--due <days>', 'show only those lapsing inside this many days')
     .action((options: { on?: string; due?: string }) => {
       const on = onDate(context, options.on);
-      const entries = context.workspace().personnel.entries();
+      const entries = context.workspace().registerEntries();
       const rows = statusRows(entries, on);
       const shown =
         options.due === undefined ? rows : [...dueWithinDays(rows, Number(options.due))];

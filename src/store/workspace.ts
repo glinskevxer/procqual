@@ -3,6 +3,8 @@ import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 import { SystemClock, type Clock } from '../core/clock.js';
+import { PlainDate } from '../core/plainDate.js';
+import type { RegisterEntry } from '../personnel/register.js';
 import { StorageError, ValidationError } from '../core/errors.js';
 import { FileJournal } from './fileJournal.js';
 import type { Journal } from './journal.js';
@@ -136,6 +138,25 @@ export class Workspace {
     return this.directory === ':memory:';
   }
 
+  /**
+   * The register entries with the weld log folded in.
+   *
+   * The continuity clock restarts on any day a welder deposits metal, and
+   * production work is where nearly all of that happens. Reading only the
+   * personnel events meant the clock ran off coupons and hand entered uses,
+   * so a welder running a seam every day of the week could still lapse on
+   * paper.
+   */
+  registerEntries(): readonly RegisterEntry[] {
+    return this.personnel.entries().map((entry) => ({
+      ...entry,
+      usageDates: mergeDates(
+        entry.usageDates,
+        this.fabrication.usageDates(entry.qualification.stencil, entry.qualification.process),
+      ),
+    }));
+  }
+
   entryCount(): number {
     return this.journal.length();
   }
@@ -200,6 +221,11 @@ function migrateIfNeeded(
   const updated: WorkspaceMarker = { ...marker, schemaVersion: result.to };
   writeFileSync(join(path, MARKER), `${JSON.stringify(updated, null, 2)}\n`, 'utf8');
   return updated;
+}
+
+function mergeDates(left: readonly PlainDate[], right: readonly PlainDate[]): readonly PlainDate[] {
+  const days = new Set([...left, ...right].map((day) => day.toString()));
+  return [...days].sort().map((day) => PlainDate.parse(day));
 }
 
 function readMarker(path: string): WorkspaceMarker {

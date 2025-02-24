@@ -43,7 +43,7 @@ export function assignCommand(out: Output, context: Context): Command {
           procedure,
           records: workspace.procedures.recordsBehind(procedure),
           welder,
-          entries: workspace.personnel.entries(),
+          entries: workspace.registerEntries(),
           process: parseProcess(options.process),
           consumable: options.consumable,
           on,
@@ -89,7 +89,7 @@ export function assignCommand(out: Output, context: Context): Command {
       );
       const found = eligibleWelders(
         workspace.personnel.welders(),
-        workspace.personnel.entries(),
+        workspace.registerEntries(),
         requirement,
         on,
       );

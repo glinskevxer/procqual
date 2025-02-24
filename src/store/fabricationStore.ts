@@ -1,5 +1,5 @@
 import { ConflictError, NotFoundError } from '../core/errors.js';
-import type { PlainDate } from '../core/plainDate.js';
+import { PlainDate } from '../core/plainDate.js';
 import { parseWith } from '../core/schema.js';
 import type { Joint, RadiographyLevel } from '../fabrication/joint.js';
 import type { WeldLogEntry } from '../fabrication/weldLog.js';
@@ -145,6 +145,16 @@ export class FabricationStore extends ProjectingStore<Projection> {
     return [...this.projection().joints.values()]
       .filter((joint) => vessel === undefined || joint.vessel === vessel)
       .sort((left, right) => left.id.localeCompare(right.id));
+  }
+
+  /** Days a welder deposited metal with a process, from live entries only. */
+  usageDates(stencil: string, process: WeldLogEntry['process']): readonly PlainDate[] {
+    const days = new Set(
+      this.entries()
+        .filter((entry) => entry.stencil === stencil && entry.process === process)
+        .map((entry) => entry.weldedOn.toString()),
+    );
+    return [...days].sort().map((day) => PlainDate.parse(day));
   }
 
   /** Live entries, with anything voided left out. */
