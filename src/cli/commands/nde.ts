@@ -1,10 +1,17 @@
 import { Command } from 'commander';
 
-import { ValidationError } from '../../core/errors.js';
+import { deficiency, ValidationError } from '../../core/errors.js';
 import { PlainDate } from '../../core/plainDate.js';
 import { pluralise } from '../../core/text.js';
 import { Length } from '../../core/units.js';
 import { judgeExamination } from '../../nde/acceptance.js';
+import {
+  coverageFindings,
+  readAllIncrements,
+  shortFilms,
+  spotsRequired,
+  type Spot,
+} from '../../nde/coverage.js';
 import type { Examination, Indication } from '../../nde/examination.js';
 import { reviewExamination } from '../../nde/examination.js';
 import { isComplete, reviewRepair, type Repair } from '../../nde/repair.js';
@@ -172,6 +179,56 @@ export function ndeCommand(out: Output, context: Context): Command {
       for (const demand of demands) {
         out.line(describeDemand(demand));
       }
+    });
+
+  command
+    .command('coverage <joint>')
+    .description('spot radiography, increment by increment')
+    .action((jointId: string) => {
+      const workspace = context.workspace();
+      const joint = workspace.fabrication.requireJoint(jointId);
+      const examinations = workspace.examinations
+        .examinations(jointId)
+        .filter((item) => item.method === 'RT');
+      const spots: Spot[] = examinations.map((item, index) => ({
+        id: item.id,
+        examination: item.id,
+        increment: index + 1,
+        filmLength: item.coverage,
+        accepted: judgeExamination(item, joint.thickness).accepted,
+        additional: false,
+      }));
+      const readings = readAllIncrements(joint.lengthOfWeld, spots);
+      printHeading(out, `Spot radiography on ${joint.id}`);
+      out.line(
+        `${joint.lengthOfWeld.toFraction()} of weld needs ${pluralise(spotsRequired(joint.lengthOfWeld), 'spot')}`,
+      );
+      out.line('');
+      printTable(
+        out,
+        [...readings],
+        [
+          { header: 'increment', align: 'right', value: (row) => String(row.increment) },
+          { header: 'state', value: (row) => row.state },
+          { header: 'films', align: 'right', value: (row) => String(row.spots.length) },
+          { header: 'reason', value: (row) => row.reason },
+        ],
+      );
+      const short = shortFilms(spots);
+      const findings = [...coverageFindings(readings)];
+      for (const film of short) {
+        findings.push(
+          deficiency(
+            'coverage.short_film',
+            `${film.id} covers only ${film.filmLength.toFraction()}`,
+            {
+              subject: film.id,
+            },
+          ),
+        );
+      }
+      out.line('');
+      printFindings(out, findings);
     });
 
   command

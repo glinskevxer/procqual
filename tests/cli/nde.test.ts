@@ -157,6 +157,34 @@ describe('arc nde list and required', () => {
   });
 });
 
+describe('arc nde coverage', () => {
+  it('asks for one spot per fifty feet and says none has been taken', async () => {
+    const { out } = await invoke('nde', 'coverage', 'J-14');
+    expect(out.text()).toContain('96 of weld needs 1 spot');
+    expect(out.text()).toMatch(/^\s*1\s+not-started/m);
+    expect(out.text()).toContain('DEFICIENCY');
+  });
+
+  it('is satisfied by a clean radiograph', async () => {
+    await invoke(...fileArgs('X-4410'));
+    const { out } = await invoke('nde', 'coverage', 'J-14');
+    expect(out.text()).toMatch(/^\s*1\s+satisfied/m);
+    expect(out.text()).toContain('nothing to report');
+  });
+
+  it('escalates when the spot was rejected', async () => {
+    await invoke(...fileArgs('X-4411', ['--indication', 'crack:1/16:40']));
+    const { out } = await invoke('nde', 'coverage', 'J-14');
+    expect(out.text()).toContain('two-more-required');
+  });
+
+  it('notes a film shorter than the minimum', async () => {
+    await invoke(...fileArgs('X-4412', ['--coverage', '4']));
+    const { out } = await invoke('nde', 'coverage', 'J-14');
+    expect(out.text()).toContain('covers only 4');
+  });
+});
+
 describe('arc nde repair', () => {
   beforeEach(async () => {
     await invoke(...fileArgs('X-4411', ['--indication', 'crack:1/16:40']));
