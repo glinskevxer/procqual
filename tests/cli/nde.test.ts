@@ -5,6 +5,7 @@ import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
 import { sampleJoint } from '../support/joints.js';
+import { sampleEntry as sampleEntryForRates } from '../support/weldLog.js';
 
 let context: Context;
 
@@ -182,6 +183,27 @@ describe('arc nde coverage', () => {
     await invoke(...fileArgs('X-4412', ['--coverage', '4']));
     const { out } = await invoke('nde', 'coverage', 'J-14');
     expect(out.text()).toContain('covers only 4');
+  });
+});
+
+describe('arc nde rates', () => {
+  it('says so when nothing has been examined in the window', async () => {
+    const { out } = await invoke('nde', 'rates', '--on', '2030-01-01');
+    expect(out.text()).toContain('nothing examined in the window');
+  });
+
+  it('reports a rate once there is work behind it', async () => {
+    context
+      .workspace()
+      .fabrication.logWeld({ ...sampleEntryForRates(), id: 'L-1', role: 'cap' }, 'foreman');
+    await invoke(...fileArgs('X-4420', ['--indication', 'crack:1/16:40']));
+    const { out } = await invoke('nde', 'rates');
+    expect(out.text()).toMatch(/^W-118\s+SMAW\s+1\s+1\s+1\s+insufficient-sample$/m);
+  });
+
+  it('narrows to the suspended ones', async () => {
+    const { out } = await invoke('nde', 'rates', '--suspended');
+    expect(out.text()).toContain('nobody is over the suspend level');
   });
 });
 

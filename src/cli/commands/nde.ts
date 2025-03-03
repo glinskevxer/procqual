@@ -15,8 +15,11 @@ import {
 import type { Examination, Indication } from '../../nde/examination.js';
 import { reviewExamination } from '../../nde/examination.js';
 import { isComplete, reviewRepair, type Repair } from '../../nde/repair.js';
+import { rateFindings, suspended } from '../../nde/repairRate.js';
+import { repairRates } from '../../reporting/repairRateReport.js';
 import { describeDemand, requiredExaminations } from '../../nde/requirement.js';
 import type { Context } from '../context.js';
+import { onDate } from '../files.js';
 import {
   parseCertificationLevel,
   parseExaminationMethod,
@@ -280,6 +283,37 @@ export function ndeCommand(out: Output, context: Context): Command {
         printFindings(out, reviewRepair(repair, undefined));
       },
     );
+
+  command
+    .command('rates')
+    .description('the repair rate for every welder and process')
+    .option('--on <date>', 'read it as it stood on this day')
+    .option('--suspended', 'only the ones over the suspend level', false)
+    .action((options: { on?: string; suspended: boolean }) => {
+      const workspace = context.workspace();
+      const on = onDate(context, options.on);
+      const readings = repairRates(workspace, on);
+      const shown = options.suspended ? suspended(readings) : readings;
+      printHeading(out, `Repair rate at ${on.toString()}`);
+      printTable(
+        out,
+        [...shown],
+        [
+          { header: 'stencil', value: (row) => row.stencil },
+          { header: 'process', value: (row) => row.process },
+          { header: 'examined', align: 'right', value: (row) => String(row.examined) },
+          { header: 'repaired', align: 'right', value: (row) => String(row.repaired) },
+          { header: 'rate', align: 'right', value: (row) => row.rate.toString() },
+          { header: 'state', value: (row) => row.state },
+        ],
+        options.suspended ? 'nobody is over the suspend level' : 'nothing examined in the window',
+      );
+      const findings = shown.flatMap((reading) => rateFindings(reading));
+      if (findings.length > 0) {
+        out.line('');
+        printFindings(out, findings);
+      }
+    });
 
   command
     .command('repairs')
