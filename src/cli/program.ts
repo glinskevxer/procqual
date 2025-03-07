@@ -97,7 +97,8 @@ export async function run(
   out: Output,
   context?: Context,
 ): Promise<RunResult> {
-  const program = buildProgram(out, context);
+  const resolved = context ?? createContext();
+  const program = buildProgram(out, resolved);
   try {
     await program.parseAsync([...argv], { from: 'user' });
     return { code: 0 };
@@ -111,6 +112,10 @@ export async function run(
     }
     out.error(error instanceof Error ? error.message : String(error));
     return { code: 1 };
+  } finally {
+    // The lock is only ever held from the first write of a command to the end
+    // of that command, so it goes back whether the command worked or not.
+    resolved.release();
   }
 }
 

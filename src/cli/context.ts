@@ -10,6 +10,8 @@ import { defaultWorkspacePath, Workspace } from '../store/workspace.js';
  */
 export interface Context {
   workspace(): Workspace;
+  /** Give up the workspace lock, if one was ever taken. */
+  release(): void;
   readonly clock: Clock;
   readonly actor: string;
 }
@@ -35,9 +37,13 @@ export function createContext(options: ContextOptions = {}): Context {
         opened = Workspace.open(options.path ?? defaultWorkspacePath(environment), {
           clock,
           create: options.create ?? false,
+          actor,
         });
       }
       return opened;
+    },
+    release(): void {
+      opened?.release();
     },
   };
 }
@@ -50,5 +56,8 @@ export function memoryContext(options: ContextOptions = {}): Context {
     clock,
     actor: options.actor ?? 'test',
     workspace: () => workspace,
+    release: () => {
+      workspace.release();
+    },
   };
 }

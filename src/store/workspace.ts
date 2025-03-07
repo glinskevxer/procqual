@@ -9,6 +9,7 @@ import { StorageError, ValidationError } from '../core/errors.js';
 import { FileJournal } from './fileJournal.js';
 import type { Journal } from './journal.js';
 import { MemoryJournal } from './journal.js';
+import { LockingJournal } from './lockingJournal.js';
 import { describeMigration, LATEST_SCHEMA, migrate, migrationsFrom } from './migrations.js';
 import { ExaminationStore } from './examinationStore.js';
 import { FabricationStore } from './fabricationStore.js';
@@ -48,6 +49,8 @@ export interface OpenOptions {
   readonly readOnly?: boolean | undefined;
   /** Only for an in memory workspace, where there is no file to read one from. */
   readonly policy?: ShopPolicy | undefined;
+  /** Who to name in the lock file when this workspace writes. */
+  readonly actor?: string | undefined;
 }
 
 export class Workspace {
@@ -115,7 +118,8 @@ export class Workspace {
       options.tolerateTornTail === true ? { tolerateTornTail: true } : {},
     );
     const migrated = migrateIfNeeded(path, marker, journal, clock, options.readOnly === true);
-    return new Workspace(path, migrated, journal, clock, loadPolicy(path));
+    const guarded = new LockingJournal(journal, path, clock, options.actor ?? 'unknown');
+    return new Workspace(path, migrated, guarded, clock, loadPolicy(path));
   }
 
   /** A workspace held entirely in memory, for tests and for a dry run. */
@@ -159,6 +163,13 @@ export class Workspace {
 
   entryCount(): number {
     return this.journal.length();
+  }
+
+  /** Give the workspace lock up, if this workspace ever took it. */
+  release(): void {
+    if (this.journal instanceof LockingJournal) {
+      this.journal.release();
+    }
   }
 }
 
