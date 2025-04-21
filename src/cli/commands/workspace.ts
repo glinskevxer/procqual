@@ -1,6 +1,12 @@
 import { Command } from 'commander';
 
 import { keyValues, pluralise } from '../../core/text.js';
+import {
+  busyDays,
+  summariseActors,
+  summariseDays,
+  weekendDays,
+} from '../../reporting/auditTrail.js';
 import { verifyChain } from '../../store/journal.js';
 import { LATEST_SCHEMA } from '../../store/migrations.js';
 import { defaultWorkspacePath, Workspace } from '../../store/workspace.js';
@@ -108,6 +114,49 @@ export function workspaceCommand(out: Output, context: Context): Command {
         ],
         'nothing in the journal',
       );
+    });
+
+  command
+    .command('audit')
+    .description('who has been writing in the journal, and when')
+    .option('--busy <multiple>', 'flag days this many times above the rest', '5')
+    .action((options: { busy: string }) => {
+      const entries = context.workspace().journal.read();
+      const actors = summariseActors(entries);
+      const days = summariseDays(entries);
+      printHeading(out, 'Who wrote what');
+      printTable(
+        out,
+        [...actors],
+        [
+          { header: 'actor', value: (row) => row.actor },
+          { header: 'entries', align: 'right', value: (row) => String(row.entries) },
+          { header: 'first', value: (row) => row.firstAt },
+          { header: 'last', value: (row) => row.lastAt },
+          { header: 'kinds', align: 'right', value: (row) => String(row.types.length) },
+        ],
+        'nothing in the journal',
+      );
+
+      const weekends = weekendDays(days);
+      const busy = busyDays(days, Number(options.busy));
+      if (weekends.length > 0 || busy.length > 0) {
+        out.line('');
+        printHeading(out, 'Worth a second look');
+        printTable(
+          out,
+          [...weekends, ...busy],
+          [
+            { header: 'day', value: (row) => row.day },
+            { header: 'entries', align: 'right', value: (row) => String(row.entries) },
+            { header: 'actors', value: (row) => row.actors.join(', ') },
+            {
+              header: 'why',
+              value: (row) => (weekends.includes(row) ? 'weekend' : 'far busier than the rest'),
+            },
+          ],
+        );
+      }
     });
 
   return command;

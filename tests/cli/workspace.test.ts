@@ -114,3 +114,24 @@ describe('arc workspace history', () => {
     expect(out.text()).toContain('nothing in the journal');
   });
 });
+
+describe('arc workspace audit', () => {
+  beforeEach(() => {
+    const workspace = context.workspace();
+    workspace.personnel.registerWelder(sampleWelder(), 'kd');
+    workspace.fabrication.mapJoint(sampleJoint(), 'engineer');
+  });
+
+  it('counts what each actor wrote', async () => {
+    const { out } = await invoke('workspace', 'audit');
+    expect(out.text()).toContain('Who wrote what');
+    expect(out.text()).toMatch(/^engineer\s+1\s+/m);
+    expect(out.text()).toMatch(/^kd\s+1\s+/m);
+  });
+
+  it('says so when the journal is empty', async () => {
+    context = memoryContext({ clock, actor: 'kd' });
+    const { out } = await invoke('workspace', 'audit');
+    expect(out.text()).toContain('nothing in the journal');
+  });
+});

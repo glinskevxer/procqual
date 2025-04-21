@@ -2,8 +2,10 @@ import { Command } from 'commander';
 
 import { heading, pluralise } from '../../core/text.js';
 import { assemblePackage, outstandingSections } from '../../reporting/dataPackage.js';
+import { shopExceptions, worstAreas } from '../../reporting/exceptions.js';
 import { describeStatus, outstandingJoints, statusesFor } from '../../reporting/jointStatus.js';
 import type { Context } from '../context.js';
+import { onDate } from '../files.js';
 import type { Output } from '../output.js';
 import { printFindings, printHeading, printTable } from '../output.js';
 
@@ -101,6 +103,38 @@ export function reportCommand(out: Output, context: Context): Command {
         report.complete
           ? 'the package is complete'
           : `${pluralise(report.outstanding, 'item')} outstanding across ${pluralise(outstandingSections(report).length, 'section')}`,
+      );
+    });
+
+  command
+    .command('exceptions')
+    .description('everything outstanding anywhere in the shop')
+    .option('--on <date>', 'read it as it stood on this day')
+    .option('--area <name>', 'narrow to one area')
+    .action((options: { on?: string; area?: string }) => {
+      const on = onDate(context, options.on);
+      const report = shopExceptions(context.workspace(), on);
+      printHeading(out, `Outstanding at ${on.toString()}`);
+      const areas =
+        options.area === undefined
+          ? worstAreas(report)
+          : report.areas.filter((area) => area.area === options.area);
+      if (areas.length === 0) {
+        out.line(
+          options.area === undefined
+            ? 'nothing outstanding'
+            : `nothing outstanding in ${options.area}`,
+        );
+        return;
+      }
+      for (const area of areas) {
+        out.line('');
+        out.line(heading(`${area.area} (${pluralise(area.findings.length, 'item')})`, '-'));
+        printFindings(out, area.findings);
+      }
+      out.line('');
+      out.line(
+        `${pluralise(report.total, 'item')} outstanding, ${String(report.blocking)} of them blocking`,
       );
     });
 

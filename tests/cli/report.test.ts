@@ -4,6 +4,8 @@ import { memoryContext, type Context } from '../../src/cli/context.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
+import { DocumentNumber } from '../../src/core/identifier.js';
+import { date } from '../../src/core/plainDate.js';
 import { inches } from '../../src/core/units.js';
 import { sampleJoint } from '../support/joints.js';
 import { sampleExamination } from '../support/nde.js';
@@ -82,5 +84,39 @@ describe('arc report package', () => {
   it('counts what is left', async () => {
     const { out } = await invoke('report', 'package', 'V-2201');
     expect(out.text()).toMatch(/\d+ items outstanding across \d+ sections/);
+  });
+});
+
+describe('arc report exceptions', () => {
+  it('says so when there is nothing outstanding', async () => {
+    context = memoryContext({ clock: new FixedClock('2024-11-05T09:00:00.000Z') });
+    const { out } = await invoke('report', 'exceptions');
+    expect(out.text()).toContain('nothing outstanding');
+  });
+
+  it('groups what is wrong by area, worst first', async () => {
+    context.workspace().procedures.issue(
+      sampleWps({
+        number: DocumentNumber.parse('WPS-0900 Rev 0'),
+        supportedBy: [],
+        pNumbers: [],
+      }),
+      'engineer',
+    );
+    const { out } = await invoke('report', 'exceptions');
+    expect(out.text()).toContain('Outstanding at 2024-11-05');
+    expect(out.text()).toContain('procedures (');
+    expect(out.text()).toMatch(/items? outstanding, \d+ of them blocking/);
+  });
+
+  it('narrows to one area', async () => {
+    context
+      .workspace()
+      .personnel.registerWelder(
+        { stencil: 'W-118', name: 'R Ashworth', employedFrom: date('2019-04-01') },
+        'kd',
+      );
+    const { out } = await invoke('report', 'exceptions', '--area', 'procedures');
+    expect(out.text()).not.toContain('welders (');
   });
 });
