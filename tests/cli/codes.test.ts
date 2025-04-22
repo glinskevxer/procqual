@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { EXIT_INPUT } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 
@@ -33,7 +34,7 @@ describe('arc codes f-numbers', () => {
 
   it('refuses a process the shop does not run', async () => {
     const { out, result } = await invoke('codes', 'f-numbers', '--process', 'EBW');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
     expect(out.errorText()).toContain('not a process this shop runs');
   });
 });
@@ -66,7 +67,7 @@ describe('arc codes combine', () => {
 
   it('refuses a position that does not exist', async () => {
     const { out, result } = await invoke('codes', 'combine', '7G');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
     expect(out.errorText()).toContain('not a test position');
   });
 });
@@ -79,7 +80,7 @@ describe('arc codes filler', () => {
 
   it('refuses one it cannot read', async () => {
     const { result } = await invoke('codes', 'filler', 'SFA-5.1', 'XYZ');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
   });
 });
 

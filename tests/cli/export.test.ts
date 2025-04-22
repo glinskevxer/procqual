@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_CONFLICT } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -69,7 +70,7 @@ describe('arc export package', () => {
     mkdirSync(target, { recursive: true });
     writeFileSync(join(target, 'old.txt'), 'last time', 'utf8');
     const { result, out } = await invoke('export', 'package', 'V-2201', target);
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_CONFLICT);
     expect(out.errorText()).toContain('is not empty');
     expect(readdirSync(target)).toEqual(['old.txt']);
   });

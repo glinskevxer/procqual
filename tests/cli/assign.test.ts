@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_NOT_FOUND } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -89,7 +90,7 @@ describe('arc assign check', () => {
       '--consumable',
       'E7018-1/8',
     );
-    expect(badJoint.result.code).toBe(2);
+    expect(badJoint.result.code).toBe(EXIT_NOT_FOUND);
     const badWelder = await invoke(
       'assign',
       'check',
@@ -100,7 +101,7 @@ describe('arc assign check', () => {
       '--consumable',
       'E7018-1/8',
     );
-    expect(badWelder.result.code).toBe(2);
+    expect(badWelder.result.code).toBe(EXIT_NOT_FOUND);
   });
 });
 

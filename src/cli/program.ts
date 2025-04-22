@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 
 import { ArcError } from '../core/errors.js';
+import { describeExit, exitCodeFor, EXIT_INTERNAL, EXIT_OK, EXIT_USAGE } from './exitCodes.js';
 import { assignCommand } from './commands/assign.js';
 import { codesCommand } from './commands/codes.js';
 import { exportCommand } from './commands/exportCommand.js';
@@ -101,17 +102,19 @@ export async function run(
   const program = buildProgram(out, resolved);
   try {
     await program.parseAsync([...argv], { from: 'user' });
-    return { code: 0 };
+    return { code: EXIT_OK };
   } catch (error) {
     if (error instanceof ArcError) {
+      const code = exitCodeFor(error);
       out.error(`${error.code}: ${error.message}`);
-      return { code: 2 };
+      out.error(`arc: ${describeExit(code)}`);
+      return { code };
     }
     if (isCommanderExit(error)) {
-      return { code: error.exitCode };
+      return { code: error.exitCode === 0 ? EXIT_OK : EXIT_USAGE };
     }
     out.error(error instanceof Error ? error.message : String(error));
-    return { code: 1 };
+    return { code: EXIT_INTERNAL };
   } finally {
     // The lock is only ever held from the first write of a command to the end
     // of that command, so it goes back whether the command worked or not.

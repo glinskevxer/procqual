@@ -3,7 +3,7 @@ import { join, resolve } from 'node:path';
 
 import { Command } from 'commander';
 
-import { ValidationError } from '../../core/errors.js';
+import { ConflictError } from '../../core/errors.js';
 import { pluralise } from '../../core/text.js';
 import { exportPackage } from '../../exporting/documents.js';
 import type { Context } from '../context.js';
@@ -55,7 +55,7 @@ export function exportCommand(out: Output, context: Context): Command {
 
       const target = resolve(directory);
       if (existsSync(target) && readdirSync(target).length > 0) {
-        throw new ValidationError('directory', `${target} is not empty`, { directory: target });
+        throw new ConflictError(`${target} is not empty`, { directory: target });
       }
       mkdirSync(target, { recursive: true });
       for (const document of documents) {

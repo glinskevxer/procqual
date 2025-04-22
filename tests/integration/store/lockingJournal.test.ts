@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { createContext } from '../../../src/cli/context.js';
+import { EXIT_CONFLICT, EXIT_STORAGE } from '../../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../../src/cli/output.js';
 import { run } from '../../../src/cli/program.js';
 import { FixedClock } from '../../../src/core/clock.js';
@@ -87,7 +88,7 @@ describe('a command', () => {
       '--from',
       '2019-04-01',
     );
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_CONFLICT);
     expect(existsSync(lockPath(directory))).toBe(false);
   });
 
@@ -101,7 +102,7 @@ describe('a command', () => {
       '--from',
       '2021-09-06',
     );
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_STORAGE);
     expect(out.errorText()).toContain('locked by T Naylor');
     releaseLock(directory);
   });

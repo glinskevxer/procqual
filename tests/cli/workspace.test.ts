@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { createContext, memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_STORAGE } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -75,7 +76,7 @@ describe('arc workspace verify', () => {
       out,
       createContext({ path, clock, actor: 'kd' }),
     );
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_STORAGE);
     expect(out.errorText()).toContain('altered at entry 1');
   });
 });

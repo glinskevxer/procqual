@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_CONFLICT, EXIT_INPUT, EXIT_NOT_FOUND } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -63,22 +64,22 @@ describe('arc joints map', () => {
 
   it('refuses a category or a construction type it cannot read', async () => {
     const bad = await invoke(...mapArgs('J-16', ['--category', 'E']));
-    expect(bad.result.code).toBe(2);
+    expect(bad.result.code).toBe(EXIT_INPUT);
     expect(bad.out.errorText()).toContain('not a joint category');
     const worse = await invoke(...mapArgs('J-17', ['--type', '9']));
-    expect(worse.result.code).toBe(2);
+    expect(worse.result.code).toBe(EXIT_INPUT);
   });
 
   it('refuses an examination level it cannot read', async () => {
     const { result, out } = await invoke(...mapArgs('J-18', ['--radiography', 'partial']));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
     expect(out.errorText()).toContain('not an examination level');
   });
 
   it('refuses the same joint twice', async () => {
     await invoke(...mapArgs('J-14'));
     const { result } = await invoke(...mapArgs('J-14'));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_CONFLICT);
   });
 });
 
@@ -130,7 +131,7 @@ describe('arc joints show', () => {
 
   it('refuses a joint nobody mapped', async () => {
     const { result, out } = await invoke('joints', 'show', 'J-99');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_NOT_FOUND);
     expect(out.errorText()).toContain('no joint with id J-99');
   });
 });

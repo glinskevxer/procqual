@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_INPUT, EXIT_NOT_FOUND } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -122,13 +123,13 @@ describe('arc nde file', () => {
 
   it('refuses a technician nobody registered', async () => {
     const { result, out } = await invoke(...fileArgs('X-4415', ['--technician', 'Nobody']));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
     expect(out.errorText()).toContain('not on the technician register');
   });
 
   it('refuses a joint that is not on the map', async () => {
     const { result } = await invoke(...fileArgs('X-4416', ['--joint', 'J-99']));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_NOT_FOUND);
   });
 });
 
@@ -258,6 +259,6 @@ describe('arc nde repair', () => {
 
   it('refuses one against a report nobody filed', async () => {
     const { result } = await invoke(...repairArgs('R-80', ['--from', 'X-9999']));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_NOT_FOUND);
   });
 });

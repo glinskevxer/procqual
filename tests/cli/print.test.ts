@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_INPUT, EXIT_NOT_FOUND } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -57,7 +58,7 @@ describe('arc print procedure', () => {
     const path = join(directory, 'wps.txt');
     writeFileSync(path, 'the signed one', 'utf8');
     const { result, out } = await invoke('print', 'procedure', 'WPS-0110 Rev 0', '--out', path);
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
     expect(out.errorText()).toContain('cannot write');
     expect(readFileSync(path, 'utf8')).toBe('the signed one');
   });
@@ -65,7 +66,7 @@ describe('arc print procedure', () => {
   it('refuses one nobody issued and writes nothing', async () => {
     const path = join(directory, 'missing.txt');
     const { result } = await invoke('print', 'procedure', 'WPS-9999', '--out', path);
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_NOT_FOUND);
     expect(existsSync(path)).toBe(false);
   });
 });
@@ -85,6 +86,6 @@ describe('arc print record', () => {
 
   it('refuses one nobody filed', async () => {
     const { result } = await invoke('print', 'record', 'PQR-9999');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_NOT_FOUND);
   });
 });

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_CONFLICT, EXIT_INPUT, EXIT_NOT_FOUND } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -56,14 +57,14 @@ describe('arc vessels record', () => {
 
   it('refuses a service it does not know', async () => {
     const { result, out } = await invoke(...recordArgs('V-4400', ['--service', 'cryogenic']));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
     expect(out.errorText()).toContain('not a service');
   });
 
   it('refuses the same tag twice', async () => {
     await invoke(...recordArgs('V-2201'));
     const { result } = await invoke(...recordArgs('V-2201'));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_CONFLICT);
   });
 });
 
@@ -86,7 +87,7 @@ describe('arc vessels list and review', () => {
 
   it('refuses a vessel nobody recorded', async () => {
     const { result } = await invoke('vessels', 'review', 'V-9999');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_NOT_FOUND);
   });
 });
 

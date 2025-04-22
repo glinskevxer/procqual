@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_INPUT, EXIT_NOT_FOUND } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -63,7 +64,7 @@ describe('arc procedures issue', () => {
 
   it('refuses a file it cannot find or cannot read', async () => {
     const missing = await invoke('procedures', 'issue', join(directory, 'nothing.json'));
-    expect(missing.result.code).toBe(2);
+    expect(missing.result.code).toBe(EXIT_INPUT);
     expect(missing.out.errorText()).toContain('cannot read');
 
     const path = join(directory, 'broken.json');
@@ -109,7 +110,7 @@ describe('arc procedures list and show', () => {
 
   it('refuses one nobody issued', async () => {
     const { result } = await invoke('procedures', 'show', 'WPS-9999');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_NOT_FOUND);
   });
 });
 
@@ -205,7 +206,7 @@ describe('arc procedures draft', () => {
 
   it('refuses a record nobody has filed', async () => {
     const { result } = await invoke('procedures', 'draft', 'PQR-9999', '--title', 'x');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_NOT_FOUND);
   });
 });
 

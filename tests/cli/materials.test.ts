@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_CONFLICT, EXIT_INPUT, EXIT_NOT_FOUND } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -93,14 +94,14 @@ describe('arc materials certify', () => {
 
   it('refuses a chemistry pair it cannot read', async () => {
     const { result, out } = await invoke(...certifyArgs('A47216', ['--element', 'C0.18']));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
     expect(out.errorText()).toContain('expected an element=percent pair');
   });
 
   it('refuses the same heat twice', async () => {
     await invoke(...certifyArgs('A47213'));
     const { result } = await invoke(...certifyArgs('A47213'));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_CONFLICT);
   });
 });
 
@@ -122,7 +123,7 @@ describe('arc materials heats', () => {
 
   it('refuses one nobody filed', async () => {
     const { result } = await invoke('materials', 'heat', 'B00001');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_NOT_FOUND);
   });
 
   it('says so when nothing is on file', async () => {

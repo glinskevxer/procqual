@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_CONFLICT, EXIT_INPUT, EXIT_NOT_FOUND } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -42,13 +43,13 @@ describe('arc welders add', () => {
       '--from',
       '2019-04-01',
     );
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
     expect(out.errorText()).toContain('not a welder stencil');
   });
 
   it('refuses a date it cannot read', async () => {
     const { result } = await invoke('welders', 'add', 'W-118', 'R Ashworth', '--from', 'April');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
   });
 
   it('refuses the same welder twice', async () => {
@@ -61,7 +62,7 @@ describe('arc welders add', () => {
       '--from',
       '2019-04-01',
     );
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_CONFLICT);
     expect(out.errorText()).toContain('already on the register');
   });
 });
@@ -144,7 +145,7 @@ describe('arc welders coupon', () => {
 
   it('refuses a position it cannot read', async () => {
     const { result } = await invoke(...couponArgs('WPQ-0234', ['--position', '7G']));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
   });
 });
 
@@ -181,12 +182,12 @@ describe('arc welders continuity', () => {
 
   it('refuses a process the shop does not run when recording a use', async () => {
     const { result, out } = await invoke('welders', 'used', 'W-118', 'EBW', '--on', '2024-05-20');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
     expect(out.errorText()).toContain('not a process this shop runs');
   });
 
   it('refuses a use for a welder nobody holds', async () => {
     const { result } = await invoke('welders', 'used', 'W-999', 'SMAW', '--on', '2024-05-20');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_NOT_FOUND);
   });
 });

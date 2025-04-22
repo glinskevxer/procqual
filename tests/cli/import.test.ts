@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_INPUT } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -61,13 +62,13 @@ describe('arc import welders', () => {
 
   it('refuses a file it cannot read', async () => {
     const { result, out } = await invoke('import', 'welders', join(directory, 'nothing.csv'));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
     expect(out.errorText()).toContain('cannot read');
   });
 
   it('refuses a file with a column missing', async () => {
     const { result } = await invoke('import', 'welders', write('short.csv', 'stencil\nW-118\n'));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
   });
 });
 

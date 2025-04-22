@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_INPUT, EXIT_NOT_FOUND } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -60,19 +61,19 @@ describe('arc weld log', () => {
 
   it('refuses a joint that is not on the map', async () => {
     const { result, out } = await invoke(...logArgs('L-1003', ['--joint', 'J-99']));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_NOT_FOUND);
     expect(out.errorText()).toContain('no joint with id J-99');
   });
 
   it('refuses a role it does not know', async () => {
     const { result, out } = await invoke(...logArgs('L-1004', ['--role', 'middle']));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
     expect(out.errorText()).toContain('not a weld log role');
   });
 
   it('refuses a process the shop does not run', async () => {
     const { result } = await invoke(...logArgs('L-1005', ['--process', 'EBW']));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_INPUT);
   });
 });
 
@@ -120,7 +121,7 @@ describe('arc weld void', () => {
 
   it('refuses an entry nobody logged', async () => {
     const { result } = await invoke('weld', 'void', 'L-9999', '--reason', 'x');
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_NOT_FOUND);
   });
 });
 

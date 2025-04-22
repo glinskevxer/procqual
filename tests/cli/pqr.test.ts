@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { memoryContext, type Context } from '../../src/cli/context.js';
+import { EXIT_CONFLICT } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
@@ -84,7 +85,7 @@ describe('arc pqr record', () => {
   it('refuses the same number twice', async () => {
     await invoke('pqr', 'record', writeRecord('pqr.json'));
     const { result } = await invoke('pqr', 'record', writeRecord('pqr.json'));
-    expect(result.code).toBe(2);
+    expect(result.code).toBe(EXIT_CONFLICT);
   });
 });
 
