@@ -1,0 +1,29 @@
+{
+  "note": "Advisories this build knowingly ships with. Every entry names the package, the advisory, why it is accepted and the date the acceptance runs out. An advisory that is not listed here fails the build.",
+  "accepted": [
+    {
+      "advisory": "GHSA-67mh-4wv8-2f99",
+      "package": "esbuild",
+      "severity": "moderate",
+      "reason": "esbuild's development server accepts requests from any origin. It reaches this build through vitest and tsx, neither of which starts that server: the suites run in process and tsx transpiles and exits. Nothing here serves anything over http.",
+      "reviewedOn": "2025-05-12",
+      "expiresOn": "2025-11-12"
+    },
+    {
+      "advisory": "GHSA-5xrq-8626-4rwp",
+      "package": "vitest",
+      "severity": "critical",
+      "reason": "The vitest api server can be reached by a browser page when it is started with a listening port. This project never runs vitest in browser or ui mode and CI runs it headless, so no port is opened.",
+      "reviewedOn": "2025-05-12",
+      "expiresOn": "2025-11-12"
+    },
+    {
+      "advisory": "GHSA-xffm-g5w8-qvg7",
+      "package": "@eslint/plugin-kit",
+      "severity": "low",
+      "reason": "A regular expression in eslint's config comment parser can be made to backtrack. The only configs and source this runs against are in this repository.",
+      "reviewedOn": "2025-05-12",
+      "expiresOn": "2025-11-12"
+    }
+  ]
+}

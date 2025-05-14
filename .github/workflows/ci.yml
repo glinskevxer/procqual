@@ -40,6 +40,18 @@ jobs:
       - run: npm ci
       - run: npm run coverage
 
+  security:
+    name: dependency advisories
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.2'
+          cache: npm
+      - run: npm ci
+      - run: node scripts/audit-dependencies.mjs
+
   image:
     name: build and run the image
     runs-on: ubuntu-latest
