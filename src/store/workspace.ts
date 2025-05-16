@@ -11,6 +11,7 @@ import type { Journal } from './journal.js';
 import { MemoryJournal } from './journal.js';
 import { LockingJournal } from './lockingJournal.js';
 import { describeMigration, LATEST_SCHEMA, migrate, migrationsFrom } from './migrations.js';
+import { ConsumableStore } from './consumableStore.js';
 import { ExaminationStore } from './examinationStore.js';
 import { FabricationStore } from './fabricationStore.js';
 import { MaterialStore } from './materialStore.js';
@@ -65,6 +66,7 @@ export class Workspace {
   readonly materials: MaterialStore;
   readonly policy: ShopPolicy;
   readonly vessels: VesselStore;
+  readonly consumables: ConsumableStore;
 
   private constructor(
     directory: string,
@@ -84,6 +86,7 @@ export class Workspace {
     this.examinations = new ExaminationStore(journal, clock);
     this.materials = new MaterialStore(journal, clock);
     this.vessels = new VesselStore(journal, clock);
+    this.consumables = new ConsumableStore(journal, clock);
   }
 
   static open(directory: string, options: OpenOptions = {}): Workspace {
