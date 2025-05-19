@@ -13,6 +13,7 @@ import { pqrCommand } from './commands/pqr.js';
 import { printCommand } from './commands/print.js';
 import { proceduresCommand } from './commands/procedures.js';
 import { reportCommand } from './commands/report.js';
+import { storeCommand } from './commands/store.js';
 import { vesselsCommand } from './commands/vessels.js';
 import { weldCommand } from './commands/weld.js';
 import { weldersCommand } from './commands/welders.js';
@@ -58,6 +59,7 @@ export function buildProgram(out: Output, context: Context = createContext()): C
   program.addCommand(printCommand(out, context));
   program.addCommand(proceduresCommand(out, context));
   program.addCommand(reportCommand(out, context));
+  program.addCommand(storeCommand(out, context));
   program.addCommand(vesselsCommand(out, context));
   program.addCommand(weldCommand(out, context));
   program.addCommand(weldersCommand(out, context));
