@@ -1,4 +1,5 @@
 import { SystemClock, type Clock } from '../core/clock.js';
+import type { ShopPolicy } from '../policy/shopPolicy.js';
 import { defaultWorkspacePath, Workspace } from '../store/workspace.js';
 
 /**
@@ -18,6 +19,8 @@ export interface Context {
 
 export interface ContextOptions {
   readonly path?: string | undefined;
+  /** Only for an in memory context, where there is no policy file to read. */
+  readonly policy?: ShopPolicy | undefined;
   readonly create?: boolean | undefined;
   readonly clock?: Clock | undefined;
   readonly actor?: string | undefined;
@@ -51,7 +54,7 @@ export function createContext(options: ContextOptions = {}): Context {
 /** A context over an in memory workspace, for tests and for a dry run. */
 export function memoryContext(options: ContextOptions = {}): Context {
   const clock = options.clock ?? new SystemClock();
-  const workspace = Workspace.inMemory({ clock });
+  const workspace = Workspace.inMemory({ clock, policy: options.policy });
   return {
     clock,
     actor: options.actor ?? 'test',

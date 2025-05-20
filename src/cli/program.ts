@@ -9,6 +9,7 @@ import { importCommand } from './commands/importCommand.js';
 import { jointsCommand } from './commands/joints.js';
 import { materialsCommand } from './commands/materials.js';
 import { ndeCommand } from './commands/nde.js';
+import { policyCommand } from './commands/policy.js';
 import { pqrCommand } from './commands/pqr.js';
 import { printCommand } from './commands/print.js';
 import { proceduresCommand } from './commands/procedures.js';
@@ -55,6 +56,7 @@ export function buildProgram(out: Output, context: Context = createContext()): C
   program.addCommand(jointsCommand(out, context));
   program.addCommand(materialsCommand(out, context));
   program.addCommand(ndeCommand(out, context));
+  program.addCommand(policyCommand(out, context));
   program.addCommand(pqrCommand(out, context));
   program.addCommand(printCommand(out, context));
   program.addCommand(proceduresCommand(out, context));
