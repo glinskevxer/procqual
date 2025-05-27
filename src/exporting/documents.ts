@@ -1,6 +1,6 @@
 import { heading, renderTable } from '../core/text.js';
 import { describeFinding } from '../core/errors.js';
-import { assemblePackage, type PackageInput } from '../reporting/dataPackage.js';
+import { assemblePackage, packageInputFor } from '../reporting/dataPackage.js';
 import { procedureForm, recordForm, type FormHeader } from '../reporting/forms.js';
 import type { Workspace } from '../store/workspace.js';
 
@@ -34,19 +34,9 @@ export function exportPackage(workspace: Workspace, options: ExportOptions): rea
     printedAt: options.printedAt,
     buildVersion: options.buildVersion,
   };
-  const input: PackageInput = {
-    vessel: options.vessel,
-    joints: workspace.fabrication.joints(),
-    entries: workspace.fabrication.entries(),
-    examinations: workspace.examinations.examinations(),
-    repairs: workspace.examinations.repairs(),
-    charts: workspace.materials.charts(options.vessel),
-    heats: workspace.materials.heats(),
-    procedures: workspace.procedures.procedures(),
-    records: workspace.procedures.records(),
-    lethalService: options.lethalService ?? false,
-  };
-  const report = assemblePackage(input);
+  const report = assemblePackage(
+    packageInputFor(workspace, options.vessel, options.lethalService ?? false),
+  );
   const joints = workspace.fabrication.joints(options.vessel);
 
   const documents: Document[] = [];

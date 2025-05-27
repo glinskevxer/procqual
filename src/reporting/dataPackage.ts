@@ -11,7 +11,8 @@ import { isComplete, type Repair } from '../nde/repair.js';
 import { isCertified, type ProcedureQualificationRecord } from '../qualification/pqr.js';
 import { supportFindings } from '../qualification/support.js';
 import type { WeldingProcedureSpecification } from '../qualification/wps.js';
-import { statusesFor, type JointStatus } from './jointStatus.js';
+import type { Workspace } from '../store/workspace.js';
+import { statusesFor, type JointStatus, type JointStatusInput } from './jointStatus.js';
 
 /**
  * Whether a vessel's paperwork is complete enough to sign the data report.
@@ -49,6 +50,46 @@ export interface PackageReport {
   readonly statuses: readonly JointStatus[];
   readonly complete: boolean;
   readonly outstanding: number;
+}
+
+/**
+ * Gather everything a package report needs out of a workspace.
+ *
+ * Three callers were each building this by hand and they had already drifted:
+ * one of them passed an empty list of furnace charts and reported every vessel
+ * as missing its heat treatment. A report that is wrong in a way that looks
+ * like a finding is worse than one that fails.
+ */
+export function packageInputFor(
+  workspace: Workspace,
+  vessel: string,
+  lethalService = false,
+): PackageInput {
+  return {
+    vessel,
+    joints: workspace.fabrication.joints(),
+    entries: workspace.fabrication.entries(),
+    examinations: workspace.examinations.examinations(),
+    repairs: workspace.examinations.repairs(),
+    charts: workspace.materials.charts(vessel),
+    heats: workspace.materials.heats(),
+    procedures: workspace.procedures.procedures(),
+    records: workspace.procedures.records(),
+    lethalService,
+  };
+}
+
+/** What the joint status report needs, which is the same list minus the paperwork. */
+export function statusInputFor(
+  workspace: Workspace,
+  lethalService = false,
+): Omit<JointStatusInput, 'joint'> {
+  return {
+    entries: workspace.fabrication.entries(),
+    examinations: workspace.examinations.examinations(),
+    repairs: workspace.examinations.repairs(),
+    lethalService,
+  };
 }
 
 export function assemblePackage(input: PackageInput): PackageReport {

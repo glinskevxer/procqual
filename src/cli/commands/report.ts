@@ -1,7 +1,12 @@
 import { Command } from 'commander';
 
 import { heading, pluralise } from '../../core/text.js';
-import { assemblePackage, outstandingSections } from '../../reporting/dataPackage.js';
+import {
+  assemblePackage,
+  outstandingSections,
+  packageInputFor,
+  statusInputFor,
+} from '../../reporting/dataPackage.js';
 import { shopExceptions, worstAreas } from '../../reporting/exceptions.js';
 import { describeStatus, outstandingJoints, statusesFor } from '../../reporting/jointStatus.js';
 import type { Context } from '../context.js';
@@ -25,11 +30,7 @@ export function reportCommand(out: Output, context: Context): Command {
     .option('--outstanding', 'only the ones that are not finished', false)
     .action((vessel: string, options: { outstanding: boolean }) => {
       const workspace = context.workspace();
-      const statuses = statusesFor(workspace.fabrication.joints(vessel), {
-        entries: workspace.fabrication.entries(),
-        examinations: workspace.examinations.examinations(),
-        repairs: workspace.examinations.repairs(),
-      });
+      const statuses = statusesFor(workspace.fabrication.joints(vessel), statusInputFor(workspace));
       const shown = options.outstanding ? outstandingJoints(statuses) : statuses;
       printHeading(out, `Joint status for ${vessel}`);
       printTable(
@@ -62,11 +63,7 @@ export function reportCommand(out: Output, context: Context): Command {
     .action((id: string) => {
       const workspace = context.workspace();
       const joint = workspace.fabrication.requireJoint(id);
-      const status = statusesFor([joint], {
-        entries: workspace.fabrication.entries(),
-        examinations: workspace.examinations.examinations(),
-        repairs: workspace.examinations.repairs(),
-      })[0];
+      const status = statusesFor([joint], statusInputFor(workspace))[0];
       if (status === undefined) {
         return;
       }
@@ -79,19 +76,7 @@ export function reportCommand(out: Output, context: Context): Command {
     .description('whether the paperwork is complete enough to sign for')
     .option('--lethal', 'the vessel is in lethal service', false)
     .action((vessel: string, options: { lethal: boolean }) => {
-      const workspace = context.workspace();
-      const report = assemblePackage({
-        vessel,
-        joints: workspace.fabrication.joints(),
-        entries: workspace.fabrication.entries(),
-        examinations: workspace.examinations.examinations(),
-        repairs: workspace.examinations.repairs(),
-        charts: workspace.materials.charts(vessel),
-        heats: workspace.materials.heats(),
-        procedures: workspace.procedures.procedures(),
-        records: workspace.procedures.records(),
-        lethalService: options.lethal,
-      });
+      const report = assemblePackage(packageInputFor(context.workspace(), vessel, options.lethal));
       printHeading(out, `Data package for ${vessel}`);
       for (const item of report.sections) {
         out.line('');

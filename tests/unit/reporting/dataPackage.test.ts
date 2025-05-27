@@ -10,8 +10,12 @@ import type { MaterialHeat } from '../../../src/materials/heat.js';
 import {
   assemblePackage,
   outstandingSections,
+  packageInputFor,
+  statusInputFor,
   type PackageInput,
 } from '../../../src/reporting/dataPackage.js';
+import { FixedClock } from '../../../src/core/clock.js';
+import { Workspace } from '../../../src/store/workspace.js';
 import { sampleJoint } from '../../support/joints.js';
 import { sampleExamination } from '../../support/nde.js';
 import { samplePqr } from '../../support/pqr.js';
@@ -191,5 +195,41 @@ describe('counting what is left', () => {
     );
     expect(report.outstanding).toBe(0);
     expect(report.complete).toBe(true);
+  });
+});
+
+describe('gathering the input from a workspace', () => {
+  it('picks up the charts and the certificates, which three callers used to forget', () => {
+    const workspace = Workspace.inMemory({ clock: new FixedClock('2025-05-27T09:00:00.000Z') });
+    workspace.fabrication.mapJoint(sampleJoint(), 'kd');
+    workspace.materials.certify(heat('A47213'), 'goods-in');
+    workspace.materials.chart(chart(['J-14']), 'qa');
+
+    const input = packageInputFor(workspace, 'V-2201');
+    expect(input.heats).toHaveLength(1);
+    expect(input.charts).toHaveLength(1);
+    expect(input.lethalService).toBe(false);
+  });
+
+  it('narrows the charts to the vessel and leaves the joints alone', () => {
+    const workspace = Workspace.inMemory({ clock: new FixedClock('2025-05-27T09:00:00.000Z') });
+    workspace.fabrication.mapJoint(sampleJoint(), 'kd');
+    workspace.fabrication.mapJoint(sampleJoint({ id: 'J-99', vessel: 'V-3300' }), 'kd');
+    workspace.materials.chart(chart(['J-14']), 'qa');
+    workspace.materials.chart({ ...chart(['J-99']), id: 'HT-999', vessel: 'V-3300' }, 'qa');
+
+    const input = packageInputFor(workspace, 'V-2201', true);
+    expect(input.charts.map((item) => item.id)).toEqual(['HT-311']);
+    expect(input.joints).toHaveLength(2);
+    expect(input.lethalService).toBe(true);
+  });
+
+  it('gives the status report the same records without the paperwork', () => {
+    const workspace = Workspace.inMemory({ clock: new FixedClock('2025-05-27T09:00:00.000Z') });
+    workspace.fabrication.mapJoint(sampleJoint(), 'kd');
+    const input = statusInputFor(workspace, true);
+    expect(input.lethalService).toBe(true);
+    expect(input.entries).toEqual([]);
+    expect(input.repairs).toEqual([]);
   });
 });
