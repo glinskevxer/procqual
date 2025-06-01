@@ -17,6 +17,7 @@ import { reviewExamination } from '../../nde/examination.js';
 import { isComplete, reviewRepair, type Repair } from '../../nde/repair.js';
 import { rateFindings, suspended } from '../../nde/repairRate.js';
 import { repairRates } from '../../reporting/repairRateReport.js';
+import { coverFindings, methodsNeeded, register } from '../../reporting/technicianRegister.js';
 import { describeDemand, requiredExaminations } from '../../nde/requirement.js';
 import type { Context } from '../context.js';
 import { onDate } from '../files.js';
@@ -73,6 +74,32 @@ export function ndeCommand(out: Output, context: Context): Command {
         context.actor,
       );
       out.line(`${name} registered`);
+    });
+
+  command
+    .command('technicians')
+    .description('who may interpret what, and who is about to run out')
+    .option('--on <date>', 'read it as it stood on this day')
+    .action((options: { on?: string }) => {
+      const workspace = context.workspace();
+      const on = onDate(context, options.on);
+      printHeading(out, `Examination technicians at ${on.toString()}`);
+      printTable(
+        out,
+        [...register(workspace, on)],
+        [
+          { header: 'name', value: (row) => row.technician.name },
+          { header: 'level', value: (row) => row.technician.level },
+          { header: 'until', value: (row) => row.technician.certifiedUntil.toString() },
+          { header: 'days', align: 'right', value: (row) => String(row.daysRemaining) },
+          { header: 'may interpret', value: (row) => row.interprets.join(', ') || 'nothing' },
+        ],
+        'nobody on the technician register',
+      );
+      out.line('');
+      out.line(`the work on the books needs ${methodsNeeded(workspace).join(', ')}`);
+      out.line('');
+      printFindings(out, coverFindings(workspace, on));
     });
 
   command

@@ -96,6 +96,43 @@ describe('arc nde technician', () => {
   });
 });
 
+describe('arc nde technicians', () => {
+  it('lists who may interpret what', async () => {
+    const { out } = await invoke('nde', 'technicians', '--on', '2025-01-01');
+    expect(out.text()).toMatch(/^J Pilling\s+II\s+2026-03-31\s+\d+\s+RT, UT, MT, PT, VT$/m);
+    expect(out.text()).toContain('the work on the books needs RT, VT');
+  });
+
+  it('warns when only one person holds a method', async () => {
+    const { out } = await invoke('nde', 'technicians', '--on', '2025-01-01');
+    expect(out.text()).toContain('is the only person who may interpret RT');
+  });
+
+  it('blocks when nobody holds a method the work needs', async () => {
+    await invoke(
+      'nde',
+      'technician',
+      'A Hale',
+      '--level',
+      'II',
+      '--methods',
+      'MT',
+      '--until',
+      '2027-01-01',
+    );
+    const { out } = await invoke('nde', 'technicians', '--on', '2027-06-01');
+    expect(out.text()).toContain('nobody on the register may interpret RT');
+    expect(out.text()).toContain('went out of certification');
+  });
+
+  it('says so when nobody is on the register', async () => {
+    context = memoryContext({ clock: new FixedClock('2024-11-06T09:00:00.000Z') });
+    context.workspace().fabrication.mapJoint(sampleJoint(), 'kd');
+    const { out } = await invoke('nde', 'technicians');
+    expect(out.text()).toContain('nobody on the technician register');
+  });
+});
+
 describe('arc nde file', () => {
   it('files a clean report and accepts it', async () => {
     const { out, result } = await invoke(...fileArgs('X-4410'));
