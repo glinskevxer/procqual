@@ -2,6 +2,7 @@ import { parseProcess } from '../codes/process.js';
 import { decimal } from '../core/decimal.js';
 import { ArcError, blocking, type Finding } from '../core/errors.js';
 import { DocumentNumber } from '../core/identifier.js';
+import { requireWithin } from '../core/limits.js';
 import { PlainDate } from '../core/plainDate.js';
 import { Length } from '../core/units.js';
 import { normaliseStencil } from '../personnel/welder.js';
@@ -42,8 +43,10 @@ function runImport(
   build: (row: CsvRow) => RowWriter,
   options: ImportOptions,
 ): ImportResult {
+  requireWithin('fileBytes', 'the file', Buffer.byteLength(text, 'utf8'));
   const table = parseCsv(text);
   requireColumns(table, columns);
+  requireWithin('importRows', 'the file', table.rows.length);
 
   const writers: RowWriter[] = [];
   const findings: Finding[] = [];

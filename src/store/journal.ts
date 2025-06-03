@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import { StorageError, ValidationError } from '../core/errors.js';
+import { requireEntryWithin } from '../core/limits.js';
 
 /**
  * An append only journal of everything that happened.
@@ -71,6 +72,7 @@ export class MemoryJournal implements Journal {
     if (entry.actor.trim() === '') {
       throw new ValidationError('actor', 'an entry needs an actor', { type: entry.type });
     }
+    requireEntryWithin(entry.type, entry.payload);
     const sequence = this.entries.length + 1;
     const body = {
       sequence,
