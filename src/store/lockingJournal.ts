@@ -44,12 +44,20 @@ export class LockingJournal implements Journal {
     return this.inner.headHash();
   }
 
+  flush(): void {
+    this.inner.flush?.();
+  }
+
   /** True while this journal is the one holding the workspace lock. */
   holdsLock(): boolean {
     return this.holder !== undefined;
   }
 
   release(): void {
+    // Everything written under this lock reaches the disk before the lock
+    // goes back, so the next writer never reads a journal this one has not
+    // finished putting down.
+    this.flush();
     if (this.holder !== undefined) {
       releaseLock(this.directory);
       this.holder = undefined;

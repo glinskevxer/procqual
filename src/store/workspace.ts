@@ -168,11 +168,17 @@ export class Workspace {
     return this.journal.length();
   }
 
-  /** Give the workspace lock up, if this workspace ever took it. */
+  /**
+   * Push everything written to the disk and give the workspace lock up. Every
+   * command calls this when it finishes, and so should anything else that
+   * writes and then stops.
+   */
   release(): void {
     if (this.journal instanceof LockingJournal) {
       this.journal.release();
+      return;
     }
+    this.journal.flush?.();
   }
 }
 

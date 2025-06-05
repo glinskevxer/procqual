@@ -28,8 +28,16 @@ export abstract class ProjectingStore<TProjection> {
 
   protected projection(): TProjection {
     const length = this.journal.length();
-    if (this.cache !== undefined && this.cache.at === length) {
-      return this.cache.projection;
+    const held = this.cache;
+    if (held !== undefined && held.at === length) {
+      return held.projection;
+    }
+    if (held !== undefined && held.at < length) {
+      for (const entry of this.journal.read(held.at + 1)) {
+        this.apply(held.projection, entry);
+      }
+      this.cache = { at: length, projection: held.projection };
+      return held.projection;
     }
     const projection = this.empty();
     for (const entry of this.journal.read()) {
@@ -41,7 +49,6 @@ export abstract class ProjectingStore<TProjection> {
 
   protected write(type: string, actor: string, payload: Record<string, unknown>): void {
     this.journal.append({ type, actor, payload, at: this.clock.now().toISOString() });
-    this.cache = undefined;
   }
 
   /** Entries the journal holds, for a report that wants the history itself. */

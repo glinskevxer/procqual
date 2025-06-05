@@ -33,6 +33,13 @@ import {
  * Reading verifies the hash chain and refuses to open a file that has been
  * edited. Recovering from a torn tail is a different thing from accepting an
  * edited middle, and only the first is forgiven.
+ *
+ * The lines go out as they are written and the fsync is left until the caller
+ * says it is finished. Syncing every line was the first thing here and it cost
+ * a fifth of a second an entry on a network share, which turned an import of a
+ * year's weld log into an afternoon. The unit that matters is the command, not
+ * the line: a machine that dies halfway through one loses the whole command
+ * rather than half of it, which is the better of the two ways to lose it.
  */
 
 export interface FileJournalOptions {
@@ -44,6 +51,7 @@ export class FileJournal implements Journal {
   private readonly path: string;
   private readonly entries: JournalEntry[];
   private discardedTail = false;
+  private unsynced = false;
 
   constructor(path: string, options: FileJournalOptions = {}) {
     this.path = path;
@@ -77,7 +85,8 @@ export class FileJournal implements Journal {
       payload: Object.freeze({ ...entry.payload }),
     };
     const written: JournalEntry = { ...body, hash: hashEntry(this.headHash(), body) };
-    appendLine(this.path, JSON.stringify(written));
+    appendFileSync(this.path, `${JSON.stringify(written)}\n`, 'utf8');
+    this.unsynced = true;
     this.entries.push(written);
     return written;
   }
@@ -92,6 +101,20 @@ export class FileJournal implements Journal {
 
   headHash(): string {
     return this.entries[this.entries.length - 1]?.hash ?? GENESIS_HASH;
+  }
+
+  /** Push everything written so far as far as the disk will take it. */
+  flush(): void {
+    if (!this.unsynced) {
+      return;
+    }
+    const handle = openSync(this.path, 'r+');
+    try {
+      fsyncSync(handle);
+    } finally {
+      closeSync(handle);
+    }
+    this.unsynced = false;
   }
 
   /** True when a partly written last line was thrown away on opening. */
@@ -111,6 +134,8 @@ export class FileJournal implements Journal {
     renameSync(temporary, this.path);
     this.entries.length = 0;
     this.entries.push(...entries);
+    this.unsynced = true;
+    this.flush();
   }
 }
 
@@ -146,14 +171,4 @@ function readEntries(path: string, options: FileJournalOptions): LoadedJournal {
 function truncateTo(path: string, entries: readonly JournalEntry[]): void {
   const body = entries.map((entry) => JSON.stringify(entry)).join('\n');
   writeFileSync(path, entries.length === 0 ? '' : `${body}\n`, 'utf8');
-}
-
-function appendLine(path: string, line: string): void {
-  appendFileSync(path, `${line}\n`, 'utf8');
-  const handle = openSync(path, 'r+');
-  try {
-    fsyncSync(handle);
-  } finally {
-    closeSync(handle);
-  }
 }

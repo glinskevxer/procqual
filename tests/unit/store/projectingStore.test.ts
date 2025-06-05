@@ -72,12 +72,13 @@ describe('the cache', () => {
     expect(store.rebuildCount()).toBe(first);
   });
 
-  it('rebuilds after a write', () => {
+  it('does not rebuild after a write either, it extends', () => {
     const { store } = build();
     store.count('a', 'kd');
     const first = store.rebuildCount();
     store.count('b', 'kd');
-    expect(store.rebuildCount()).toBeGreaterThan(first);
+    expect(store.seen()).toEqual(['a', 'b']);
+    expect(store.rebuildCount()).toBe(first);
   });
 
   it('rebuilds when the journal moves underneath it', () => {

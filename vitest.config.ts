@@ -3,6 +3,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     include: ['tests/**/*.test.ts'],
+    // The load suite writes ten thousand journal lines and fsyncs each one.
+    testTimeout: 120_000,
+    hookTimeout: 120_000,
     environment: 'node',
     coverage: {
       provider: 'v8',

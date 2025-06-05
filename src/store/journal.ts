@@ -43,6 +43,11 @@ export interface Journal {
   read(fromSequence?: number): readonly JournalEntry[];
   length(): number;
   headHash(): string;
+  /**
+   * Push whatever has been written as far as the disk will take it. A journal
+   * that has nowhere to push to may leave this out.
+   */
+  flush?(): void;
 }
 
 export function hashEntry(previousHash: string, entry: Omit<JournalEntry, 'hash'>): string {
