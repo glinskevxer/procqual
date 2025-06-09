@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { FixedClock } from '../../../src/core/clock.js';
-import { importHeats, importWeldLog, importWelders } from '../../../src/importing/importers.js';
+import {
+  importHeats,
+  importWeldLog,
+  importWeldMap,
+  importWelders,
+} from '../../../src/importing/importers.js';
 import { Workspace } from '../../../src/store/workspace.js';
 import { sampleJoint } from '../../support/joints.js';
 
@@ -80,6 +85,46 @@ describe('importing heats', () => {
     const result = importHeats(workspace, bad);
     expect(result.written).toBe(0);
     expect(result.findings[0]?.message).toContain('line 2');
+  });
+});
+
+describe('importing a weld map', () => {
+  const file =
+    'joint,vessel,description,category,type,position,thickness,length,left,right,heat-left,heat-right,procedure,radiography\n' +
+    'J-14,V-2201,shell seam,A,1,vertical,1/2,96,SA-516 Gr 70,SA-516 Gr 70,A47213,A47213,WPS-0110,full\n' +
+    'J-15,V-2201,circ seam,B,2,horizontal,1/2,120,SA-516 Gr 70,SA-516 Gr 70,A47213,A47213,WPS-0110,\n';
+
+  it('writes both joints', () => {
+    const result = importWeldMap(workspace, file, { actor: 'kd' });
+    expect(result.written).toBe(2);
+    expect(workspace.fabrication.joints()).toHaveLength(2);
+  });
+
+  it('reads the category, the type and the thickness', () => {
+    importWeldMap(workspace, file, { actor: 'kd' });
+    const joint = workspace.fabrication.requireJoint('J-15');
+    expect(joint.category).toBe('B');
+    expect(joint.type).toBe(2);
+    expect(joint.thickness.toFraction()).toBe('1/2');
+  });
+
+  it('falls back to full radiography when the column is blank', () => {
+    importWeldMap(workspace, file, { actor: 'kd' });
+    expect(workspace.fabrication.requireJoint('J-15').radiography).toBe('full');
+  });
+
+  it('stops on a construction type it does not know', () => {
+    const bad = file.replace(',A,1,vertical', ',A,9,vertical');
+    const result = importWeldMap(workspace, bad);
+    expect(result.written).toBe(0);
+    expect(result.findings[0]?.message).toContain('not a joint construction type');
+  });
+
+  it('stops on a position it does not know', () => {
+    const bad = file.replace(',1,vertical,', ',1,sideways,');
+    expect(importWeldMap(workspace, bad).findings[0]?.message).toContain(
+      'not a production position',
+    );
   });
 });
 

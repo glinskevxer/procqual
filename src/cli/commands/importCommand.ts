@@ -6,6 +6,7 @@ import { pluralise } from '../../core/text.js';
 import {
   importHeats,
   importWeldLog,
+  importWeldMap,
   importWelders,
   type ImportOptions,
   type ImportResult,
@@ -68,6 +69,14 @@ export function importCommand(out: Output, context: Context): Command {
     .option('--write', 'write the records rather than only checking the file', false)
     .action((file: string, options: { write: boolean }) => {
       run('Mill certificates', file, options.write, importHeats);
+    });
+
+  command
+    .command('weld-map <file>')
+    .description('a csv of joints')
+    .option('--write', 'write the records rather than only checking the file', false)
+    .action((file: string, options: { write: boolean }) => {
+      run('Weld map', file, options.write, importWeldMap);
     });
 
   command

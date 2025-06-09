@@ -7,6 +7,12 @@ import {
   packageInputFor,
   statusInputFor,
 } from '../../reporting/dataPackage.js';
+import {
+  efficiencyFindings,
+  reviewEfficiencies,
+  thicknessPenaltyPercent,
+  worthExamining,
+} from '../../reporting/efficiencyReview.js';
 import { shopExceptions, worstAreas } from '../../reporting/exceptions.js';
 import { describeStatus, outstandingJoints, statusesFor } from '../../reporting/jointStatus.js';
 import type { Context } from '../context.js';
@@ -89,6 +95,51 @@ export function reportCommand(out: Output, context: Context): Command {
           ? 'the package is complete'
           : `${pluralise(report.outstanding, 'item')} outstanding across ${pluralise(outstandingSections(report).length, 'section')}`,
       );
+    });
+
+  command
+    .command('efficiency <vessel>')
+    .description('what the examination level on each joint is buying')
+    .option('--lethal', 'the vessel is in lethal service', false)
+    .action((vessel: string, options: { lethal: boolean }) => {
+      const rows = reviewEfficiencies(
+        context.workspace().fabrication.joints(vessel),
+        options.lethal,
+      );
+      printHeading(out, `Joint efficiency for ${vessel}`);
+      printTable(
+        out,
+        [...rows],
+        [
+          { header: 'joint', value: (row) => row.joint.id },
+          { header: 'type', align: 'right', value: (row) => String(row.joint.type) },
+          { header: 'examined', value: (row) => row.examinationApplied },
+          {
+            header: 'carries',
+            align: 'right',
+            value: (row) => row.achieved?.toFixed(2) ?? 'none',
+          },
+          { header: 'available', align: 'right', value: (row) => row.designed.toFixed(2) },
+          {
+            header: 'extra section',
+            align: 'right',
+            value: (row) => {
+              const penalty = thicknessPenaltyPercent(row);
+              return penalty === undefined || penalty.isZero() ? '' : `${penalty.toString()}%`;
+            },
+          },
+        ],
+        'nothing on the weld map for this vessel',
+      );
+      const { worth } = worthExamining(rows);
+      out.line('');
+      out.line(
+        worth.length === 0
+          ? 'every joint carries what its construction allows'
+          : `${pluralise(worth.length, 'joint')} would carry more if it were examined further`,
+      );
+      out.line('');
+      printFindings(out, efficiencyFindings(rows));
     });
 
   command

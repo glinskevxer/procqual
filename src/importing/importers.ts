@@ -1,10 +1,11 @@
 import { parseProcess } from '../codes/process.js';
 import { decimal } from '../core/decimal.js';
-import { ArcError, blocking, type Finding } from '../core/errors.js';
+import { ArcError, blocking, ValidationError, type Finding } from '../core/errors.js';
 import { DocumentNumber } from '../core/identifier.js';
 import { requireWithin } from '../core/limits.js';
 import { PlainDate } from '../core/plainDate.js';
 import { Length } from '../core/units.js';
+import { isJointType, parseJointCategory, type Joint } from '../fabrication/joint.js';
 import { normaliseStencil } from '../personnel/welder.js';
 import type { Workspace } from '../store/workspace.js';
 import { field, optionalField, parseCsv, requireColumns, type CsvRow } from './csv.js';
@@ -190,6 +191,85 @@ export function importWeldLog(
     },
     options,
   );
+}
+
+export function importWeldMap(
+  workspace: Workspace,
+  text: string,
+  options: ImportOptions = {},
+): ImportResult {
+  return runImport(
+    workspace,
+    text,
+    [
+      'joint',
+      'vessel',
+      'description',
+      'category',
+      'type',
+      'position',
+      'thickness',
+      'length',
+      'left',
+      'right',
+      'heat-left',
+      'heat-right',
+      'procedure',
+    ],
+    (row) => {
+      const joint: Joint = {
+        id: field(row, 'joint'),
+        vessel: field(row, 'vessel'),
+        description: field(row, 'description'),
+        category: parseJointCategory(field(row, 'category')),
+        type: readJointType(field(row, 'type')),
+        weldType: optionalField(row, 'weld') === 'fillet' ? 'fillet' : 'groove',
+        productForm: optionalField(row, 'form') === 'pipe' ? 'pipe' : 'plate',
+        position: readPosition(field(row, 'position')),
+        thickness: Length.parse(field(row, 'thickness')),
+        lengthOfWeld: Length.parse(field(row, 'length')),
+        baseMetalLeft: field(row, 'left'),
+        baseMetalRight: field(row, 'right'),
+        heatLeft: field(row, 'heat-left'),
+        heatRight: field(row, 'heat-right'),
+        procedure: DocumentNumber.parse(field(row, 'procedure')),
+        radiography: readRadiography(optionalField(row, 'radiography')),
+        outsideDiameter: readOptionalLength(row, 'diameter'),
+      };
+      return (target, actor) => {
+        target.fabrication.mapJoint(joint, actor);
+      };
+    },
+    options,
+  );
+}
+
+function readJointType(value: string): Joint['type'] {
+  const parsed = Number(value);
+  if (!isJointType(parsed)) {
+    throw new ValidationError('type', `not a joint construction type: ${value}`, { value });
+  }
+  return parsed;
+}
+
+function readPosition(value: string): Joint['position'] {
+  const known = ['flat', 'horizontal', 'vertical', 'overhead'] as const;
+  const found = known.find((position) => position === value.toLowerCase());
+  if (found === undefined) {
+    throw new ValidationError('position', `not a production position: ${value}`, { value });
+  }
+  return found;
+}
+
+function readRadiography(value: string | undefined): Joint['radiography'] {
+  const known = ['full', 'spot', 'none'] as const;
+  const found = known.find((level) => level === value?.toLowerCase());
+  return found ?? 'full';
+}
+
+function readOptionalLength(row: CsvRow, name: string): Length | undefined {
+  const value = optionalField(row, name);
+  return value === undefined ? undefined : Length.parse(value);
 }
 
 function readOptionalDate(row: CsvRow, name: string): PlainDate | undefined {

@@ -88,6 +88,27 @@ describe('arc report package', () => {
   });
 });
 
+describe('arc report efficiency', () => {
+  it('shows what each joint carries against what it could', async () => {
+    const { out } = await invoke('report', 'efficiency', 'V-2201');
+    expect(out.text()).toContain('Joint efficiency for V-2201');
+    expect(out.text()).toMatch(/^J-14\s+1\s+full\s+1.00\s+1.00\s*$/m);
+    expect(out.text()).toContain('every joint carries what its construction allows');
+  });
+
+  it('says how much extra section a cut back examination costs', async () => {
+    context.workspace().fabrication.changeExaminationLevel('J-14', 'spot', 'client agreed', 'kd');
+    const { out } = await invoke('report', 'efficiency', 'V-2201');
+    expect(out.text()).toMatch(/^J-14\s+1\s+spot\s+0.85\s+1.00\s+17.7%$/m);
+    expect(out.text()).toContain('would carry more if it were examined further');
+  });
+
+  it('says so when a vessel has nothing on it', async () => {
+    const { out } = await invoke('report', 'efficiency', 'V-9999');
+    expect(out.text()).toContain('nothing on the weld map for this vessel');
+  });
+});
+
 describe('arc report exceptions', () => {
   it('says so when there is nothing outstanding', async () => {
     context = memoryContext({ clock: new FixedClock('2024-11-05T09:00:00.000Z') });
