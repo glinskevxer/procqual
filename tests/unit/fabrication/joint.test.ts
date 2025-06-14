@@ -11,6 +11,8 @@ import {
   jointTypeFacts,
   JOINT_TYPES,
   parseJointCategory,
+  parseJointType,
+  parseRadiographyLevel,
   reviewJoint,
 } from '../../../src/fabrication/joint.js';
 import { sampleJoint } from '../../support/joints.js';
@@ -35,6 +37,21 @@ describe('categories and types', () => {
     expect(categoryAllows(3, 'C')).toBe(false);
     expect(categoryAllows(7, 'D')).toBe(true);
     expect(categoryAllows(7, 'A')).toBe(false);
+  });
+});
+
+describe('reading a level and a type off a form', () => {
+  it('reads an examination level in any case', () => {
+    expect(parseRadiographyLevel('FULL')).toBe('full');
+    expect(parseRadiographyLevel(' spot ')).toBe('spot');
+    expect(() => parseRadiographyLevel('partial')).toThrow(/not an examination level/);
+  });
+
+  it('reads a construction type from a number or a string', () => {
+    expect(parseJointType('1')).toBe(1);
+    expect(parseJointType(7)).toBe(7);
+    expect(() => parseJointType('8')).toThrow(/not a joint construction type/);
+    expect(() => parseJointType('butt')).toThrow(ValidationError);
   });
 });
 

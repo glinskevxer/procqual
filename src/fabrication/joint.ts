@@ -145,6 +145,22 @@ export function parseJointCategory(value: string): JointCategory {
   return upper;
 }
 
+export function parseRadiographyLevel(value: string): RadiographyLevel {
+  const lower = value.trim().toLowerCase();
+  if (lower !== 'full' && lower !== 'spot' && lower !== 'none') {
+    throw new ValidationError('radiography', `not an examination level: ${value}`, { value });
+  }
+  return lower;
+}
+
+export function parseJointType(value: string | number): JointType {
+  const parsed = typeof value === 'number' ? value : Number(value.trim());
+  if (!isJointType(parsed)) {
+    throw new ValidationError('type', `not a joint construction type: ${String(value)}`, { value });
+  }
+  return parsed;
+}
+
 export function categoryAllows(type: JointType, category: JointCategory): boolean {
   return jointTypeFacts(type).categories.includes(category);
 }

@@ -8,6 +8,8 @@ import {
   parseTestPosition,
   positionFacts,
   positionsForWeldType,
+  isProductionPosition,
+  parseProductionPosition,
   positionsQualifiedBy,
   progressionCovers,
   qualifiesAllPositions,
@@ -87,6 +89,20 @@ describe('what a coupon qualifies', () => {
   it('keeps the combined list in a stable order', () => {
     expect(combinedPositions(['4G', '3G'], 'groove')).toEqual(['flat', 'vertical', 'overhead']);
     expect(combinedPositions([], 'groove')).toEqual([]);
+  });
+});
+
+describe('production positions', () => {
+  it('reads one in any case', () => {
+    expect(parseProductionPosition('Vertical')).toBe('vertical');
+    expect(parseProductionPosition(' OVERHEAD ')).toBe('overhead');
+    expect(isProductionPosition('flat')).toBe(true);
+  });
+
+  it('refuses one that does not exist and lists what does', () => {
+    expect(() => parseProductionPosition('sideways')).toThrow(ValidationError);
+    expect(() => parseProductionPosition('sideways')).toThrow(/not a production position/);
+    expect(isProductionPosition('sideways')).toBe(false);
   });
 });
 

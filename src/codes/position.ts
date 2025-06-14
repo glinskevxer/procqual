@@ -172,6 +172,21 @@ export function parseTestPosition(value: string): TestPosition {
   return upper;
 }
 
+export function isProductionPosition(value: string): value is ProductionPosition {
+  return (PRODUCTION_POSITIONS as readonly string[]).includes(value.trim().toLowerCase());
+}
+
+export function parseProductionPosition(value: string): ProductionPosition {
+  const lower = value.trim().toLowerCase();
+  if (!isProductionPosition(lower)) {
+    throw new ValidationError('position', `not a production position: ${value}`, {
+      value,
+      allowed: PRODUCTION_POSITIONS,
+    });
+  }
+  return lower;
+}
+
 export function positionFacts(code: TestPosition): PositionFacts {
   const facts = FACTS[code];
   if (facts === undefined) {

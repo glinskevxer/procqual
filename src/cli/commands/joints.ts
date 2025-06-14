@@ -6,6 +6,8 @@ import { keyValues, pluralise } from '../../core/text.js';
 import {
   describeJoint,
   jointEfficiency,
+  parseJointType,
+  parseRadiographyLevel,
   jointTypeFacts,
   parseJointCategory,
   reviewJoint,
@@ -13,13 +15,8 @@ import {
 } from '../../fabrication/joint.js';
 import { describeDemand, requiredExaminations } from '../../nde/requirement.js';
 import type { Context } from '../context.js';
-import {
-  parseJointType,
-  parseProductForm,
-  parseProductionPosition,
-  parseRadiographyLevel,
-  parseWeldType,
-} from '../parse.js';
+import { parseProductionPosition } from '../../codes/position.js';
+import { parseProductForm, parseWeldType } from '../parse.js';
 import type { Output } from '../output.js';
 import { printFindings, printHeading, printTable } from '../output.js';
 

@@ -1,7 +1,5 @@
-import type { ProductionPosition } from '../codes/position.js';
 import { ValidationError } from '../core/errors.js';
-import type { Joint, RadiographyLevel } from '../fabrication/joint.js';
-import { isJointType } from '../fabrication/joint.js';
+import type { Joint } from '../fabrication/joint.js';
 import type { CertificationLevel, IndicationType } from '../nde/examination.js';
 import type { ExaminationMethod } from '../nde/requirement.js';
 import type { LogRole } from '../fabrication/weldLog.js';
@@ -13,7 +11,14 @@ import type { LogRole } from '../fabrication/weldLog.js';
  * already started to differ: one accepted an upper case method and another
  * did not. They are all short enough that duplicating them looked harmless,
  * which is exactly the shape of duplication that goes wrong quietly.
+ *
+ * What is left here is the vocabularies that belong to the command line
+ * itself. A vocabulary that belongs to a domain module now lives with it, so
+ * the importers and the commands read the same one, which is what the weld map
+ * importer immediately proved was needed.
  */
+export { parseProductionPosition } from '../codes/position.js';
+export { parseJointType, parseRadiographyLevel } from '../fabrication/joint.js';
 
 function oneOf<T extends string>(
   field: string,
@@ -30,8 +35,6 @@ function oneOf<T extends string>(
   return found;
 }
 
-const POSITIONS: readonly ProductionPosition[] = ['flat', 'horizontal', 'vertical', 'overhead'];
-const LEVELS: readonly RadiographyLevel[] = ['full', 'spot', 'none'];
 const ROLES: readonly LogRole[] = ['root', 'fill', 'cap', 'repair', 'tack'];
 const METHODS: readonly ExaminationMethod[] = ['RT', 'UT', 'MT', 'PT', 'VT'];
 const CERTIFICATIONS: readonly CertificationLevel[] = ['I', 'II', 'III'];
@@ -44,18 +47,6 @@ const INDICATIONS: readonly IndicationType[] = [
   'undercut',
   'geometric',
 ];
-
-export function parseProductionPosition(value: string): ProductionPosition {
-  return oneOf('position', 'a production position', POSITIONS, value, (input) =>
-    input.toLowerCase(),
-  );
-}
-
-export function parseRadiographyLevel(value: string): RadiographyLevel {
-  return oneOf('radiography', 'an examination level', LEVELS, value, (input) =>
-    input.toLowerCase(),
-  );
-}
 
 export function parseLogRole(value: string): LogRole {
   return oneOf('role', 'a weld log role', ROLES, value, (input) => input.toLowerCase());
@@ -75,14 +66,6 @@ export function parseIndicationType(value: string): IndicationType {
   return oneOf('indication', 'an indication type', INDICATIONS, value, (input) =>
     input.toLowerCase(),
   );
-}
-
-export function parseJointType(value: string): Joint['type'] {
-  const parsed = Number(value);
-  if (!isJointType(parsed)) {
-    throw new ValidationError('type', `not a joint construction type: ${value}`, { value });
-  }
-  return parsed;
 }
 
 export function parseWeldType(value: string): Joint['weldType'] {
