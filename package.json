@@ -23,7 +23,8 @@
     "arc": "tsx src/cli/main.ts",
     "reference": "npm run build && node scripts/reference.mjs",
     "reference:check": "npm run build && node scripts/reference.mjs --check",
-    "audit": "node scripts/audit-dependencies.mjs"
+    "audit": "node scripts/audit-dependencies.mjs",
+    "release:check": "npm run build && node scripts/release-check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.19.0",

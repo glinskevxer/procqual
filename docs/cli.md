@@ -126,6 +126,16 @@ arc import heats [options] <file>
 
 - `--write` — write the records rather than only checking the file
 
+### arc import weld-map
+
+a csv of joints
+
+```
+arc import weld-map [options] <file>
+```
+
+- `--write` — write the records rather than only checking the file
+
 ### arc import weld-log
 
 a csv of weld log entries
@@ -286,6 +296,16 @@ arc nde technician [options] <name>
 - `--methods <list>` (required) — comma separated, as RT,UT
 - `--until <date>` (required) — the day the certification runs out
 
+### arc nde technicians
+
+who may interpret what, and who is about to run out
+
+```
+arc nde technicians [options]
+```
+
+- `--on <date>` — read it as it stood on this day
+
 ### arc nde file
 
 file an examination report
@@ -370,6 +390,42 @@ arc nde repairs [options]
 ```
 
 - `--joint <id>` — narrow to one joint
+
+## policy
+
+the numbers this shop sets for itself
+
+### arc policy show
+
+what this workspace is running on
+
+```
+arc policy show [options]
+```
+
+### arc policy defaults
+
+the figures a workspace uses when it sets none of its own
+
+```
+arc policy defaults [options]
+```
+
+### arc policy check
+
+read a policy file without adopting it
+
+```
+arc policy check [options] <file>
+```
+
+### arc policy workspace
+
+read the policy a workspace directory would load
+
+```
+arc policy workspace [options] <directory>
+```
 
 ## pqr
 
@@ -572,6 +628,16 @@ arc report package [options] <vessel>
 
 - `--lethal` — the vessel is in lethal service
 
+### arc report efficiency
+
+what the examination level on each joint is buying
+
+```
+arc report efficiency [options] <vessel>
+```
+
+- `--lethal` — the vessel is in lethal service
+
 ### arc report exceptions
 
 everything outstanding anywhere in the shop
@@ -582,6 +648,86 @@ arc report exceptions [options]
 
 - `--on <date>` — read it as it stood on this day
 - `--area <name>` — narrow to one area
+
+## status
+
+the shop this morning
+
+### arc status
+
+the shop this morning
+
+```
+arc status [options]
+```
+
+- `--on <date>` — read it as it stood on this day
+- `--due <days>` — the continuity warning window [default: 30]
+
+## store
+
+the consumable store room
+
+### arc store out
+
+issue a tin or a reel from the oven
+
+```
+arc store out [options] <id> <consumable> <lot>
+```
+
+- `--to <stencil>` (required) — who is taking it
+- `--oven <name>` (required) — which oven it came out of
+- `--at <instant>` — when, if not now
+
+### arc store back
+
+record a tin going back into the oven
+
+```
+arc store back [options] <id>
+```
+
+- `--at <instant>` — when, if not now
+
+### arc store issues
+
+what is out of the oven now, and what it has used
+
+```
+arc store issues [options]
+```
+
+- `--all` — include the tins that have gone back
+
+### arc store oven
+
+log an oven temperature
+
+```
+arc store oven [options] <name> <temperature>
+```
+
+- `--at <instant>` — when, if not now
+- `--rebake` — this reading is from a rebake cycle
+
+### arc store ovens
+
+the oven log
+
+```
+arc store ovens [options]
+```
+
+- `--oven <name>` — narrow to one oven
+
+### arc store controlled
+
+which consumables are on the oven clock at all
+
+```
+arc store controlled [options]
+```
 
 ## vessels
 
