@@ -24,7 +24,8 @@
     "reference": "npm run build && node scripts/reference.mjs",
     "reference:check": "npm run build && node scripts/reference.mjs --check",
     "audit": "node scripts/audit-dependencies.mjs",
-    "release:check": "npm run build && node scripts/release-check.mjs"
+    "release:check": "npm run build && node scripts/release-check.mjs",
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "@eslint/js": "9.19.0",
@@ -42,5 +43,30 @@
   },
   "dependencies": {
     "commander": "13.1.0"
-  }
+  },
+  "keywords": [
+    "welding",
+    "asme",
+    "qualification",
+    "fabrication",
+    "quality",
+    "traceability"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./cli": {
+      "types": "./dist/cli/program.d.ts",
+      "default": "./dist/cli/program.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "docs/cli.md"
+  ],
+  "sideEffects": false
 }
