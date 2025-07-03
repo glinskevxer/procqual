@@ -177,15 +177,71 @@ const STOCK: readonly StockItem[] = [
 
 const BY_CODE = new Map(STOCK.map((item) => [item.code.toUpperCase(), item]));
 
-/** Dissimilar pairs the shop has a standing answer for. */
-const DISSIMILAR_ANSWERS: readonly { pair: readonly [string, string]; codes: readonly string[] }[] =
-  [
-    { pair: ['1', '8'], codes: ['E309L-16', 'ER309L', 'ERNiCrMo-3'] },
-    { pair: ['1', '4'], codes: ['E8018-B2', 'ER80S-B2'] },
-    { pair: ['1', '5A'], codes: ['E9018-B3', 'ER90S-B3'] },
-    { pair: ['8', '10H'], codes: ['ER2209', 'ERNiCrMo-3'] },
-    { pair: ['1', '43'], codes: ['ERNiCrMo-3'] },
-  ];
+/**
+ * Dissimilar pairs the shop has a standing answer for, with the reasoning kept
+ * beside each one.
+ *
+ * The reasoning is not decoration. Somebody will want to weld a pair that is
+ * not on this list, and the only useful thing this file can tell them is which
+ * of these cases theirs is nearest to and why that answer was chosen. Without
+ * it they will pick whichever filler is on the shelf.
+ */
+export interface DissimilarAnswer {
+  readonly pair: readonly [string, string];
+  readonly codes: readonly string[];
+  readonly reason: string;
+}
+
+const DISSIMILAR_ANSWERS: readonly DissimilarAnswer[] = [
+  {
+    pair: ['1', '8'],
+    codes: ['E309L-16', 'ER309L', 'ERNiCrMo-3'],
+    reason:
+      'a 309 deposit carries enough chromium and nickel to stay austenitic after it has been diluted by carbon steel from one side, which a 308 deposit does not',
+  },
+  {
+    pair: ['1', '4'],
+    codes: ['E8018-B2', 'ER80S-B2'],
+    reason: 'the filler matches the alloyed side, which is the side with the service requirement',
+  },
+  {
+    pair: ['1', '5A'],
+    codes: ['E9018-B3', 'ER90S-B3'],
+    reason: 'the filler matches the alloyed side, and the joint is heat treated to the same rule',
+  },
+  {
+    pair: ['3', '4'],
+    codes: ['E8018-B2', 'ER80S-B2'],
+    reason: 'the higher alloy governs, and one and a quarter chrome tolerates the dilution',
+  },
+  {
+    pair: ['4', '5A'],
+    codes: ['E9018-B3', 'ER90S-B3'],
+    reason: 'the higher alloy governs, and the post weld heat treatment is written for it',
+  },
+  {
+    pair: ['8', '10H'],
+    codes: ['ER2209', 'ERNiCrMo-3'],
+    reason:
+      'a duplex filler keeps the ferrite balance the duplex side needs, and a nickel filler avoids the question entirely where the balance cannot be held',
+  },
+  {
+    pair: ['1', '43'],
+    codes: ['ERNiCrMo-3'],
+    reason: 'the nickel side will not tolerate iron dilution, so the filler comes from that side',
+  },
+  {
+    pair: ['8', '43'],
+    codes: ['ERNiCrMo-3'],
+    reason: 'the nickel side governs and its own filler suits the stainless side as well',
+  },
+  {
+    pair: ['1', '9B'],
+    codes: ['ERNiCrMo-3', 'E309L-16'],
+    reason:
+      'a nickel steel joint at low temperature wants a filler that keeps its toughness, and neither side of the joint has one that does across the dilution',
+  },
+];
 
 export function allStock(): readonly StockItem[] {
   return STOCK;
@@ -230,10 +286,7 @@ export function fillersForJoint(left: string, right: string): readonly StockItem
   if (left === right) {
     return STOCK.filter((item) => item.suitsPNumbers.includes(left));
   }
-  const answer = DISSIMILAR_ANSWERS.find(
-    ({ pair }) =>
-      (pair[0] === left && pair[1] === right) || (pair[0] === right && pair[1] === left),
-  );
+  const answer = answerFor(left, right);
   if (answer === undefined) {
     return [];
   }
@@ -242,4 +295,37 @@ export function fillersForJoint(left: string, right: string): readonly StockItem
 
 export function isFillerAllowed(code: string, left: string, right: string): boolean {
   return fillersForJoint(left, right).some((item) => item.code === code);
+}
+
+/** Why the standing answer for a pair is what it is, or nothing when there is none. */
+export function dissimilarReason(left: string, right: string): string | undefined {
+  return answerFor(left, right)?.reason;
+}
+
+/** Every pair the shop has an answer for, for the reference sheet on the wall. */
+export function dissimilarAnswers(): readonly DissimilarAnswer[] {
+  return DISSIMILAR_ANSWERS;
+}
+
+/**
+ * The nearest pair the shop does have an answer for, when it has none for the
+ * pair asked about. Nearest means sharing one side, and the higher alloy side
+ * is preferred because that is the side that governs.
+ */
+export function nearestAnswer(left: string, right: string): DissimilarAnswer | undefined {
+  const own = answerFor(left, right);
+  if (own !== undefined) {
+    return own;
+  }
+  const shares = DISSIMILAR_ANSWERS.filter(
+    ({ pair }) => pair.includes(left) || pair.includes(right),
+  );
+  return shares[shares.length - 1];
+}
+
+function answerFor(left: string, right: string): DissimilarAnswer | undefined {
+  return DISSIMILAR_ANSWERS.find(
+    ({ pair }) =>
+      (pair[0] === left && pair[1] === right) || (pair[0] === right && pair[1] === left),
+  );
 }

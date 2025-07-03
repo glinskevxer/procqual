@@ -6,8 +6,11 @@ import { inches } from '../../../src/core/units.js';
 import {
   allStock,
   classificationOf,
+  dissimilarAnswers,
+  dissimilarReason,
   fillersForJoint,
   isFillerAllowed,
+  nearestAnswer,
   needsHoldingOven,
   stockForProcess,
   stockItem,
@@ -68,6 +71,53 @@ describe('the holding oven', () => {
     expect(needsHoldingOven('ER70S-6')).toBe(false);
     expect(needsHoldingOven('E6010-1/8')).toBe(false);
     expect(needsHoldingOven('EM12K')).toBe(false);
+  });
+});
+
+describe('the standing answers', () => {
+  it('carries a reason with each of them', () => {
+    for (const answer of dissimilarAnswers()) {
+      expect(answer.reason.length).toBeGreaterThan(20);
+      expect(answer.codes.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('names a reason for a pair it knows', () => {
+    expect(dissimilarReason('1', '8')).toContain('stay austenitic after it has been diluted');
+    expect(dissimilarReason('8', '1')).toBe(dissimilarReason('1', '8'));
+  });
+
+  it('names none for a pair it does not', () => {
+    expect(dissimilarReason('15E', '22')).toBeUndefined();
+  });
+
+  it('covers the chrome moly ladder as well as the carbon steel one', () => {
+    expect(fillersForJoint('3', '4').map((item) => item.code)).toEqual(['E8018-B2', 'ER80S-B2']);
+    expect(fillersForJoint('4', '5A').map((item) => item.code)).toEqual(['E9018-B3', 'ER90S-B3']);
+  });
+
+  it('every code it names is a consumable the store room keeps', () => {
+    for (const answer of dissimilarAnswers()) {
+      for (const code of answer.codes) {
+        expect(() => stockItem(code)).not.toThrow();
+      }
+    }
+  });
+});
+
+describe('the nearest answer to a pair nobody has decided', () => {
+  it('is the pair itself when there is one', () => {
+    expect(nearestAnswer('1', '8')?.pair).toEqual(['1', '8']);
+  });
+
+  it('shares a side when there is not', () => {
+    const nearest = nearestAnswer('9B', '8');
+    expect(nearest).toBeDefined();
+    expect(nearest?.pair.includes('9B') || nearest?.pair.includes('8')).toBe(true);
+  });
+
+  it('finds nothing at all for a pair with neither side on the list', () => {
+    expect(nearestAnswer('21', '22')).toBeUndefined();
   });
 });
 
