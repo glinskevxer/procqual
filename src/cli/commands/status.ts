@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 
 import { heading, keyValues, pluralise } from '../../core/text.js';
-import { continuityStatusOn, dueWithinDays } from '../../personnel/continuity.js';
+import { continuityRows, dueRows, lapsedRows } from '../../reporting/continuityReport.js';
 import { shopExceptions } from '../../reporting/exceptions.js';
 import { statusesFor } from '../../reporting/jointStatus.js';
 import { statusInputFor } from '../../reporting/dataPackage.js';
@@ -38,12 +38,9 @@ export function statusCommand(out: Output, context: Context): Command {
         ]),
       );
 
-      const rows = workspace.registerEntries().map((entry) => ({
-        qualification: entry.qualification,
-        status: continuityStatusOn(entry.qualification, entry.usageDates, on, workspace.policy),
-      }));
-      const due = dueWithinDays(rows, Number(options.due));
-      const lapsed = rows.filter((row) => row.status.state === 'lapsed');
+      const rows = continuityRows(workspace, on);
+      const due = dueRows(rows, Number(options.due));
+      const lapsed = lapsedRows(rows);
 
       out.line('');
       out.line(heading('welders to watch', '-'));

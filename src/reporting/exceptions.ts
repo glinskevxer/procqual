@@ -1,6 +1,6 @@
 import { sortFindings, type Finding } from '../core/errors.js';
 import type { PlainDate } from '../core/plainDate.js';
-import { continuityFindings, continuityStatusOn } from '../personnel/continuity.js';
+import { continuityReportFindings, continuityRows } from './continuityReport.js';
 import { reviewQualification } from '../personnel/welder.js';
 import { verifyCertificate } from '../materials/heat.js';
 import { reviewChart } from '../fabrication/heatTreatmentChart.js';
@@ -56,13 +56,11 @@ export function shopExceptions(workspace: Workspace, on: PlainDate): ExceptionRe
 }
 
 function welderFindings(workspace: Workspace, on: PlainDate): readonly Finding[] {
-  const findings: Finding[] = [];
-  for (const entry of workspace.registerEntries()) {
-    const welder = workspace.personnel.welder(entry.qualification.stencil);
-    findings.push(...reviewQualification(entry.qualification, welder));
-    const status = continuityStatusOn(entry.qualification, entry.usageDates, on, workspace.policy);
-    findings.push(...continuityFindings(entry.qualification, status, workspace.policy));
-  }
+  const rows = continuityRows(workspace, on);
+  const findings: Finding[] = rows.flatMap((row) =>
+    reviewQualification(row.qualification, workspace.personnel.welder(row.qualification.stencil)),
+  );
+  findings.push(...continuityReportFindings(workspace, rows));
   return sortFindings(findings);
 }
 

@@ -12,29 +12,13 @@ import {
 import { reviewQualification } from '../../personnel/welder.js';
 import { PlainDate } from '../../core/plainDate.js';
 import { pluralise } from '../../core/text.js';
-import {
-  continuityStatusOn,
-  dueWithinDays,
-  type ContinuityStatus,
-} from '../../personnel/continuity.js';
-import { processesHeld, type RegisterEntry } from '../../personnel/register.js';
-import { normaliseStencil, type PerformanceQualification } from '../../personnel/welder.js';
+import { processesHeld } from '../../personnel/register.js';
+import { normaliseStencil } from '../../personnel/welder.js';
+import { continuityRows, dueRows, lapsedRows } from '../../reporting/continuityReport.js';
 import type { Context } from '../context.js';
 import { onDate } from '../files.js';
 import type { Output } from '../output.js';
 import { printFindings, printHeading, printTable } from '../output.js';
-
-interface StatusRow {
-  qualification: PerformanceQualification;
-  status: ContinuityStatus;
-}
-
-function statusRows(entries: readonly RegisterEntry[], on: PlainDate): StatusRow[] {
-  return entries.map((entry) => ({
-    qualification: entry.qualification,
-    status: continuityStatusOn(entry.qualification, entry.usageDates, on),
-  }));
-}
 
 /**
  * The welder register, from the command line.
@@ -232,10 +216,8 @@ export function weldersCommand(out: Output, context: Context): Command {
     .option('--due <days>', 'show only those lapsing inside this many days')
     .action((options: { on?: string; due?: string }) => {
       const on = onDate(context, options.on);
-      const entries = context.workspace().registerEntries();
-      const rows = statusRows(entries, on);
-      const shown =
-        options.due === undefined ? rows : [...dueWithinDays(rows, Number(options.due))];
+      const rows = continuityRows(context.workspace(), on);
+      const shown = options.due === undefined ? rows : dueRows(rows, Number(options.due));
       printHeading(out, `Continuity at ${on.toString()}`);
       printTable(
         out,
@@ -251,7 +233,7 @@ export function weldersCommand(out: Output, context: Context): Command {
         ],
         'no coupons on the register',
       );
-      const lapsed = rows.filter((row) => row.status.state === 'lapsed').length;
+      const lapsed = lapsedRows(rows).length;
       if (lapsed > 0 && options.due === undefined) {
         out.line('');
         out.line(`${pluralise(lapsed, 'coupon')} lapsed`);
