@@ -144,6 +144,21 @@ export function shortFilms(spots: readonly Spot[]): readonly Spot[] {
   return spots.filter((spot) => spot.filmLength.lessThan(MINIMUM_FILM_LENGTH));
 }
 
+/**
+ * Films too short to be a spot. This lives here rather than in the command
+ * that prints it, because every `coverage.` finding has to come from the one
+ * place or the codes stop meaning anything to somebody grepping a report.
+ */
+export function shortFilmFindings(spots: readonly Spot[]): readonly Finding[] {
+  return shortFilms(spots).map((film) =>
+    deficiency(
+      'coverage.short_film',
+      `${film.id} covers ${film.filmLength.toFraction()} against ${MINIMUM_FILM_LENGTH.toFraction()} required for a spot`,
+      { clause: 'UW-52', subject: film.id },
+    ),
+  );
+}
+
 export function isSatisfied(readings: readonly IncrementReading[]): boolean {
   return readings.every((item) => item.state === 'satisfied');
 }

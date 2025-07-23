@@ -8,6 +8,7 @@ import {
   isSatisfied,
   readAllIncrements,
   readIncrement,
+  shortFilmFindings,
   shortFilms,
   spotsRequired,
   type Spot,
@@ -139,5 +140,18 @@ describe('film length', () => {
   it('picks out films shorter than the minimum', () => {
     const spots = [spot(), spot({ id: 'S-2', filmLength: inches('4') })];
     expect(shortFilms(spots).map((item) => item.id)).toEqual(['S-2']);
+  });
+
+  it('reports each of them with the length it should have been', () => {
+    const findings = shortFilmFindings([spot(), spot({ id: 'S-2', filmLength: inches('4') })]);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.code).toBe('coverage.short_film');
+    expect(findings[0]?.severity).toBe('deficiency');
+    expect(findings[0]?.message).toBe('S-2 covers 4 against 6 required for a spot');
+    expect(findings[0]?.clause).toBe('UW-52');
+  });
+
+  it('says nothing about films that are long enough', () => {
+    expect(shortFilmFindings([spot()])).toEqual([]);
   });
 });

@@ -220,7 +220,7 @@ describe('arc nde coverage', () => {
   it('notes a film shorter than the minimum', async () => {
     await invoke(...fileArgs('X-4412', ['--coverage', '4']));
     const { out } = await invoke('nde', 'coverage', 'J-14');
-    expect(out.text()).toContain('covers only 4');
+    expect(out.text()).toContain('covers 4 against 6 required');
   });
 });
 

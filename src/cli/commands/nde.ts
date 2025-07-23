@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 
-import { deficiency, ValidationError } from '../../core/errors.js';
+import { ValidationError } from '../../core/errors.js';
 import { PlainDate } from '../../core/plainDate.js';
 import { pluralise } from '../../core/text.js';
 import { Length } from '../../core/units.js';
@@ -8,7 +8,7 @@ import { judgeExamination } from '../../nde/acceptance.js';
 import {
   coverageFindings,
   readAllIncrements,
-  shortFilms,
+  shortFilmFindings,
   spotsRequired,
   type Spot,
 } from '../../nde/coverage.js';
@@ -244,21 +244,8 @@ export function ndeCommand(out: Output, context: Context): Command {
           { header: 'reason', value: (row) => row.reason },
         ],
       );
-      const short = shortFilms(spots);
-      const findings = [...coverageFindings(readings)];
-      for (const film of short) {
-        findings.push(
-          deficiency(
-            'coverage.short_film',
-            `${film.id} covers only ${film.filmLength.toFraction()}`,
-            {
-              subject: film.id,
-            },
-          ),
-        );
-      }
       out.line('');
-      printFindings(out, findings);
+      printFindings(out, [...coverageFindings(readings), ...shortFilmFindings(spots)]);
     });
 
   command
