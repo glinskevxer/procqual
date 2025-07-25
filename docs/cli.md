@@ -79,6 +79,17 @@ arc codes combine [options] <positions...>
 
 - `--fillet` — read the fillet column instead of the groove column
 
+### arc codes clauses
+
+every clause this system rests on, and what it does with each
+
+```
+arc codes clauses [options]
+```
+
+- `--area <name>` — narrow to one area
+- `--clause <number>` — look one up
+
 ### arc codes filler
 
 read the groups out of a printed classification

@@ -15,6 +15,7 @@
 export const PUBLIC_MODULES: readonly string[] = [
   'codes/anumber',
   'codes/classification',
+  'codes/clause',
   'codes/essentialVariable',
   'codes/fnumber',
   'codes/heatTreatment',

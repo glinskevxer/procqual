@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 
 import { allANumbers, describeANumber } from '../../codes/anumber.js';
+import { allClauses, clause, clauseAreas } from '../../codes/clause.js';
 import { parseClassification, describeClassification } from '../../codes/classification.js';
 import { allFNumbers, fNumbersQualifiedBy, needsAtmosphericControl } from '../../codes/fnumber.js';
 import { allPNumbers, pNumbersQualifiedBy } from '../../codes/pnumber.js';
@@ -109,6 +110,41 @@ export function codesCommand(out: Output): Command {
       const combined = combinedPositions(parsed, weldType);
       out.line(
         `${parsed.join(' + ')} qualifies ${combined.length === 0 ? 'nothing' : combined.join(', ')} for ${weldType} welds`,
+      );
+    });
+
+  command
+    .command('clauses')
+    .description('every clause this system rests on, and what it does with each')
+    .option('--area <name>', 'narrow to one area')
+    .option('--clause <number>', 'look one up')
+    .action((options: { area?: string; clause?: string }) => {
+      if (options.clause !== undefined) {
+        const found = clause(options.clause);
+        out.line(
+          found === undefined
+            ? `${options.clause} is not cited anywhere in this program`
+            : `${found.number} (${found.area}): ${found.what}`,
+        );
+        return;
+      }
+      const rows =
+        options.area === undefined
+          ? allClauses()
+          : allClauses().filter((item) => item.area === options.area);
+      printHeading(
+        out,
+        options.area === undefined ? 'Clauses cited' : `Clauses on ${options.area}`,
+      );
+      printTable(
+        out,
+        [...rows],
+        [
+          { header: 'clause', value: (row) => row.number },
+          { header: 'area', value: (row) => row.area },
+          { header: 'what it decides', value: (row) => row.what },
+        ],
+        `no clauses on ${options.area ?? ''}, the areas are ${clauseAreas().join(', ')}`,
       );
     });
 

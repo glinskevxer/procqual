@@ -7,6 +7,7 @@
 
 export * from './codes/anumber.js';
 export * from './codes/classification.js';
+export * from './codes/clause.js';
 export * from './codes/essentialVariable.js';
 export * from './codes/fnumber.js';
 export * from './codes/heatTreatment.js';
