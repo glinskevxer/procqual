@@ -24,7 +24,7 @@ import type { Context } from './context.js';
 import { createContext } from './context.js';
 import type { Output } from './output.js';
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.9.0';
 
 /**
  * Builds the whole command tree against an injected output.

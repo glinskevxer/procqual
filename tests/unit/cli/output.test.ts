@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   ConsoleOutput,
   printFindings,
+  printFindingsBySubject,
   printHeading,
   printTable,
   RecordingOutput,
@@ -67,6 +68,29 @@ describe('the printers', () => {
     const empty = new RecordingOutput();
     printTable(empty, [], [{ header: 'id', value: () => '' }], 'nothing at all');
     expect(empty.text()).toBe('nothing at all');
+  });
+
+  it('groups findings by subject with the clauses under them', () => {
+    const out = new RecordingOutput();
+    printFindingsBySubject(out, [
+      advisory('a', 'a note', { subject: 'J-15', clause: 'UW-11' }),
+      blocking('b', 'a fault', { subject: 'J-14' }),
+    ]);
+    expect(out.lines[0]).toBe('J-14');
+    expect(out.lines[1]).toContain('  BLOCKING');
+    expect(out.text()).toContain('clauses: UW-11');
+  });
+
+  it('names a group with no subject', () => {
+    const out = new RecordingOutput();
+    printFindingsBySubject(out, [advisory('a', 'a note')]);
+    expect(out.lines[0]).toBe('(no subject)');
+  });
+
+  it('says when there is nothing to group', () => {
+    const out = new RecordingOutput();
+    printFindingsBySubject(out, []);
+    expect(out.text()).toBe('nothing to report');
   });
 
   it('prints findings worst first and says when there are none', () => {

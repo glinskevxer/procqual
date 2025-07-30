@@ -159,6 +159,57 @@ export function countBySeverity(findings: readonly Finding[]): Record<Severity, 
   return counts;
 }
 
+/**
+ * Group findings by what they are about, worst subject first.
+ *
+ * A list of forty findings sorted by severity reads as forty problems. The
+ * same list grouped by subject usually reads as six, because one joint with a
+ * bad radiograph, an open repair and no heat treatment chart is one
+ * conversation rather than three.
+ */
+export function groupBySubject(
+  findings: readonly Finding[],
+): readonly { subject: string; findings: readonly Finding[] }[] {
+  const groups = new Map<string, Finding[]>();
+  for (const item of findings) {
+    const key = item.subject ?? '';
+    const held = groups.get(key) ?? [];
+    held.push(item);
+    groups.set(key, held);
+  }
+  return [...groups.entries()]
+    .map(([subject, own]) => ({ subject, findings: sortFindings(own) }))
+    .sort((left, right) => {
+      const bySeverity =
+        SEVERITY_ORDER[worstSeverity(right.findings) ?? 'advisory'] -
+        SEVERITY_ORDER[worstSeverity(left.findings) ?? 'advisory'];
+      if (bySeverity !== 0) {
+        return bySeverity;
+      }
+      const byCount = right.findings.length - left.findings.length;
+      if (byCount !== 0) {
+        return byCount;
+      }
+      // Findings with nothing to hang them on go last. They are the ones a
+      // reader can do least with, and putting them first buries the rest.
+      if (left.subject === '' || right.subject === '') {
+        return left.subject === '' ? 1 : -1;
+      }
+      return left.subject.localeCompare(right.subject);
+    });
+}
+
+/** The clauses a list of findings rests on, for the covering note on a report. */
+export function clausesCited(findings: readonly Finding[]): readonly string[] {
+  return [
+    ...new Set(
+      findings
+        .map((item) => item.clause)
+        .filter((clause): clause is string => clause !== undefined),
+    ),
+  ].sort();
+}
+
 export function describeFinding(item: Finding): string {
   const clause = item.clause === undefined ? '' : ` [${item.clause}]`;
   const subject = item.subject === undefined ? '' : ` ${item.subject}:`;

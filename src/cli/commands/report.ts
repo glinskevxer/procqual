@@ -18,7 +18,7 @@ import { describeStatus, outstandingJoints, statusesFor } from '../../reporting/
 import type { Context } from '../context.js';
 import { onDate } from '../files.js';
 import type { Output } from '../output.js';
-import { printFindings, printHeading, printTable } from '../output.js';
+import { printFindings, printFindingsBySubject, printHeading, printTable } from '../output.js';
 
 /**
  * The reports, which is what most people who use this system ever run.
@@ -166,7 +166,7 @@ export function reportCommand(out: Output, context: Context): Command {
       for (const area of areas) {
         out.line('');
         out.line(heading(`${area.area} (${pluralise(area.findings.length, 'item')})`, '-'));
-        printFindings(out, area.findings);
+        printFindingsBySubject(out, area.findings);
       }
       out.line('');
       out.line(

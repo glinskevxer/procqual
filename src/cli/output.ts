@@ -1,4 +1,10 @@
-import { describeFinding, sortFindings, type Finding } from '../core/errors.js';
+import {
+  clausesCited,
+  describeFinding,
+  groupBySubject,
+  sortFindings,
+  type Finding,
+} from '../core/errors.js';
 import { heading, renderTable, type Column } from '../core/text.js';
 
 /**
@@ -68,5 +74,32 @@ export function printFindings(out: Output, findings: readonly Finding[]): void {
   }
   for (const finding of sortFindings(findings)) {
     out.line(describeFinding(finding));
+  }
+}
+
+/**
+ * The same findings grouped by what they are about. Forty findings sorted by
+ * severity read as forty problems; grouped by subject they usually read as
+ * six, which is the number of conversations somebody has to have.
+ */
+export function printFindingsBySubject(out: Output, findings: readonly Finding[]): void {
+  if (findings.length === 0) {
+    out.line('nothing to report');
+    return;
+  }
+  const groups = groupBySubject(findings);
+  groups.forEach((group, index) => {
+    if (index > 0) {
+      out.line('');
+    }
+    out.line(group.subject === '' ? '(no subject)' : group.subject);
+    for (const finding of group.findings) {
+      out.line(`  ${describeFinding(finding)}`);
+    }
+  });
+  const clauses = clausesCited(findings);
+  if (clauses.length > 0) {
+    out.line('');
+    out.line(`clauses: ${clauses.join(', ')}`);
   }
 }

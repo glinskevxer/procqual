@@ -3,11 +3,13 @@ import { describe, expect, it } from 'vitest';
 import {
   advisory,
   ArcError,
+  clausesCited,
   blocking,
   ConflictError,
   countBySeverity,
   deficiency,
   describeFinding,
+  groupBySubject,
   isAcceptable,
   isClean,
   NotFoundError,
@@ -62,6 +64,41 @@ describe('the error subclasses', () => {
 
   it('marks a storage failure', () => {
     expect(new StorageError('journal truncated').code).toBe('storage');
+  });
+});
+
+describe('grouping by subject', () => {
+  const list = [
+    blocking('a', 'a fault', { subject: 'J-14' }),
+    advisory('b', 'a note', { subject: 'J-15', clause: 'UW-11' }),
+    deficiency('c', 'a gap', { subject: 'J-14', clause: 'UW-52' }),
+    advisory('d', 'another note'),
+  ];
+
+  it('puts the worst subject first', () => {
+    expect(groupBySubject(list).map((group) => group.subject)).toEqual(['J-14', 'J-15', '']);
+  });
+
+  it('keeps each group sorted worst first', () => {
+    expect(groupBySubject(list)[0]?.findings.map((item) => item.code)).toEqual(['a', 'c']);
+  });
+
+  it('breaks a tie on how many there are and then on the name', () => {
+    const even = [
+      advisory('a', 'x', { subject: 'B' }),
+      advisory('b', 'x', { subject: 'A' }),
+      advisory('c', 'x', { subject: 'A' }),
+    ];
+    expect(groupBySubject(even).map((group) => group.subject)).toEqual(['A', 'B']);
+  });
+
+  it('has nothing to say about an empty list', () => {
+    expect(groupBySubject([])).toEqual([]);
+  });
+
+  it('lists the clauses the findings rest on, once each and in order', () => {
+    expect(clausesCited(list)).toEqual(['UW-11', 'UW-52']);
+    expect(clausesCited([advisory('a', 'x')])).toEqual([]);
   });
 });
 
