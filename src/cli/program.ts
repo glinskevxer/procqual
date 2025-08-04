@@ -4,6 +4,7 @@ import { ArcError } from '../core/errors.js';
 import { describeExit, exitCodeFor, EXIT_INTERNAL, EXIT_OK, EXIT_USAGE } from './exitCodes.js';
 import { assignCommand } from './commands/assign.js';
 import { codesCommand } from './commands/codes.js';
+import { doctorCommand } from './commands/doctor.js';
 import { exportCommand } from './commands/exportCommand.js';
 import { importCommand } from './commands/importCommand.js';
 import { jointsCommand } from './commands/joints.js';
@@ -52,6 +53,7 @@ export function buildProgram(out: Output, context: Context = createContext()): C
 
   program.addCommand(assignCommand(out, context));
   program.addCommand(codesCommand(out));
+  program.addCommand(doctorCommand(out, context));
   program.addCommand(exportCommand(out, context));
   program.addCommand(importCommand(out, context));
   program.addCommand(jointsCommand(out, context));

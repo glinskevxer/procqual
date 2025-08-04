@@ -98,6 +98,20 @@ read the groups out of a printed classification
 arc codes filler [options] <specification> <classification>
 ```
 
+## doctor
+
+check the workspace and everything the program can tell about itself
+
+### arc doctor
+
+check the workspace and everything the program can tell about itself
+
+```
+arc doctor [options]
+```
+
+- `--on <date>` — read the dated checks as they stood on this day
+
 ## export
 
 write a vessel file out

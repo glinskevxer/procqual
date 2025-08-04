@@ -43,10 +43,20 @@ export function register(workspace: Workspace, on: PlainDate): readonly Technici
     .sort((left, right) => left.daysRemaining - right.daysRemaining);
 }
 
-/** Methods the joints on the books will need, whether or not anyone holds them. */
+/**
+ * Methods the joints on the books will need, whether or not anyone holds them.
+ *
+ * A shop with nothing on the books needs nothing, which is worth saying: the
+ * first version of this always asked for visual examination and reported an
+ * empty workspace as having no cover for work it did not have.
+ */
 export function methodsNeeded(workspace: Workspace): readonly ExaminationMethod[] {
+  const joints = workspace.fabrication.joints();
+  if (joints.length === 0) {
+    return [];
+  }
   const needed = new Set<ExaminationMethod>(['VT']);
-  for (const joint of workspace.fabrication.joints()) {
+  for (const joint of joints) {
     if (joint.radiography !== 'none') {
       needed.add('RT');
     }

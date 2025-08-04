@@ -131,6 +131,13 @@ describe('arc nde technicians', () => {
     const { out } = await invoke('nde', 'technicians');
     expect(out.text()).toContain('nobody on the technician register');
   });
+
+  it('asks for nothing at all when there is no work on the books', async () => {
+    context = memoryContext({ clock: new FixedClock('2024-11-06T09:00:00.000Z') });
+    const { out } = await invoke('nde', 'technicians');
+    expect(out.text()).toContain('the work on the books needs');
+    expect(out.text()).toContain('nothing to report');
+  });
 });
 
 describe('arc nde file', () => {
