@@ -4,10 +4,16 @@
 // point does not resolve or that a subpath import lost its extension.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const entry = resolve('dist/cli/main.js');
+
+// The version the binary prints has to be the version the package claims.
+// Writing the number out here by hand meant a release bump left this check
+// asserting a version that had stopped existing, and nothing in the unit
+// suite could see it because the unit suite never runs the built entry.
+const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
 
 function fail(message) {
   process.stderr.write(`smoke: ${message}\n`);
@@ -33,7 +39,7 @@ if (!existsSync(entry)) {
   process.exit(1);
 }
 
-expectContains('version', arc('--version'), '0.1.0');
+expectContains('version', arc('--version'), version);
 expectContains('help', arc('--help'), 'weld procedure qualification');
 expectContains('p numbers', arc('codes', 'p-numbers'), 'austenitic stainless');
 expectContains('f numbers', arc('codes', 'f-numbers'), 'low hydrogen electrodes');

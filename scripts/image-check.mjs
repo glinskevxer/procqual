@@ -6,11 +6,14 @@
 // exactly what CI runs.
 
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, existsSync, rmSync } from 'node:fs';
+import { mkdtempSync, existsSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const image = process.argv[2] ?? 'arc:ci';
+// Same reason as the smoke script: read the number the package states
+// rather than a prefix that happened to be true when this was written.
+const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
 const failures = [];
 
 function arc(args, mounts = []) {
@@ -41,7 +44,7 @@ function expectContains(label, output, wanted) {
   process.stderr.write(output);
 }
 
-expectContains('version', arc(['--version']), '0.');
+expectContains('version', arc(['--version']), version);
 expectContains('help', arc(['--help']), 'weld procedure qualification');
 expectContains('p numbers', arc(['codes', 'p-numbers']), 'austenitic stainless');
 expectContains(

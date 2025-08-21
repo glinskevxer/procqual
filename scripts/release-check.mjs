@@ -41,15 +41,24 @@ check('version', () => {
   return manifest.version;
 });
 
-check('the version the command line reports', () => {
-  const source = readFileSync('src/cli/program.ts', 'utf8');
+check('the version the program reports', () => {
+  const source = readFileSync('src/version.ts', 'utf8');
   const match = /export const VERSION = '([^']+)'/.exec(source);
-  insist(match !== null, 'src/cli/program.ts does not declare a VERSION');
+  insist(match !== null, 'src/version.ts does not declare a VERSION');
   insist(
     match[1] === manifest.version,
-    `the command line says ${match[1]} and package.json says ${manifest.version}`,
+    `src/version.ts says ${match[1]} and package.json says ${manifest.version}`,
   );
   return match[1];
+});
+
+check('the changelog names this version', () => {
+  const changelog = readFileSync('CHANGELOG.md', 'utf8');
+  insist(
+    changelog.includes(`## ${manifest.version}`),
+    `CHANGELOG.md has no entry for ${manifest.version}`,
+  );
+  return `## ${manifest.version}`;
 });
 
 check('the entry point exists in the build', () => {

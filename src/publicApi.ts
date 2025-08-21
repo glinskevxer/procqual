@@ -44,6 +44,7 @@ export const PUBLIC_MODULES: readonly string[] = [
   'qualification/impact',
   'qualification/tensile',
   'qualification/testPlan',
+  'version',
 ];
 
 /**

@@ -9,6 +9,7 @@ import { EXIT_STORAGE } from '../../src/cli/exitCodes.js';
 import { RecordingOutput } from '../../src/cli/output.js';
 import { run } from '../../src/cli/program.js';
 import { FixedClock } from '../../src/core/clock.js';
+import { VERSION } from '../../src/version.js';
 import { sampleJoint } from '../support/joints.js';
 import { sampleWelder } from '../support/welders.js';
 
@@ -49,6 +50,7 @@ describe('arc workspace status', () => {
     expect(out.text()).toContain('welders:          1');
     expect(out.text()).toContain('joints:           1');
     expect(out.text()).toContain('journal entries:  2');
+    expect(out.text()).toContain(`build:            arc ${VERSION}`);
   });
 });
 

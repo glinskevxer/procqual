@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 
 import { ArcError } from '../core/errors.js';
+import { VERSION } from '../version.js';
 import { describeExit, exitCodeFor, EXIT_INTERNAL, EXIT_OK, EXIT_USAGE } from './exitCodes.js';
 import { assignCommand } from './commands/assign.js';
 import { codesCommand } from './commands/codes.js';
@@ -25,7 +26,7 @@ import type { Context } from './context.js';
 import { createContext } from './context.js';
 import type { Output } from './output.js';
 
-export const VERSION = '0.9.0';
+export { VERSION } from '../version.js';
 
 /**
  * Builds the whole command tree against an injected output.

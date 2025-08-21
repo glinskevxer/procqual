@@ -8,6 +8,7 @@ import {
   weekendDays,
 } from '../../reporting/auditTrail.js';
 import { verifyChain } from '../../store/journal.js';
+import { describeBuild } from '../../version.js';
 import { LATEST_SCHEMA } from '../../store/migrations.js';
 import { defaultWorkspacePath, Workspace } from '../../store/workspace.js';
 import type { Context } from '../context.js';
@@ -50,6 +51,7 @@ export function workspaceCommand(out: Output, context: Context): Command {
         keyValues([
           ['shop', workspace.marker.shop],
           ['created', workspace.marker.createdAt],
+          ['build', describeBuild()],
           ['schema', `${String(workspace.marker.schemaVersion)} of ${String(LATEST_SCHEMA)}`],
           ['journal entries', String(workspace.entryCount())],
           ['welders', String(workspace.personnel.welders().length)],
